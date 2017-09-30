@@ -1,0 +1,22 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IsoHex", "IsoHex\IsoHex.shproj", "{7579511F-64BD-4CCF-B904-81EFFF500005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IsoHex.Desktop", "IsoHex.Desktop\IsoHex.Desktop.csproj", "{D66494E1-5877-4949-984B-62ABB119A3D7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.ActiveCfg = Debug
+{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.Build.0 = Debug
+{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.ActiveCfg = Release
+{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.Build.0 = Release
+{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.ActiveCfg = Debug
+{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.Build.0 = Debug
+{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.ActiveCfg = Release
+{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.Build.0 = Release
+	EndGlobalSection
+EndGlobal
