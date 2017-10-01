@@ -9,6 +9,7 @@ namespace IsoHex
     public class EntityFactory
     {
         public List<Entity> List;
+        Random rng = new Random();
 
         public EntityFactory()
         {
@@ -40,13 +41,14 @@ namespace IsoHex
             return ground;
         }
 
-        public List<Entity> TerrainFactory(int width, int height)
+        public List<Entity> TerrainFactory(int width, int depth)
         {
             List<Entity> result = new List<Entity>();
 
             foreach(var x in Enumerable.Range(0, width)){
-                foreach (var y in Enumerable.Range(0, height)){
-                    result.Add(GroundFactory(x, y, 1));
+                foreach (var y in Enumerable.Range(0, depth)){
+                    int height = rng.Next(1, 5);
+                    result.Add(GroundFactory(x, y, height));
                 }
             }
 
