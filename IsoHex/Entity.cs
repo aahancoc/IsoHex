@@ -3,7 +3,8 @@ using Microsoft.Xna.Framework;
 
 namespace IsoHex
 {
-    public class Entity
+    // Currently one Entity is 272 bytes. If that matters...
+    public struct Entity
     {
         public Guid ID;
         public _Active Active;
@@ -50,10 +51,10 @@ namespace IsoHex
 			MOBILITYFX = 1 << 16
 		}
 
-        public Entity(){
+        /*public Entity(){
             Active = _Active.NONE;
             ID = new Guid();
-        }
+        }*/
 
         public struct _Position
         {
@@ -76,9 +77,11 @@ namespace IsoHex
 
         public struct _Renderable
         {
-            public string Name;
-            public Vector3 Pos; // tiles
-            public float height; // tiles
+            public string name;
+            public Vector3 pos; // tiles
+            public Vector3 target; // tiles, place object is going to
+            public float speed;
+            public float height; // tiles, used for ground tiles and stuff
             public bool alwaysVisible; // if true, render any blocking 
                                        // objects as wireframe
             public bool hidden; // object can be visible, but isn't right now

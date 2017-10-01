@@ -10,13 +10,25 @@ Global
 		Release|AnyCPU = Release|AnyCPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.ActiveCfg = Debug
-{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.Build.0 = Debug
-{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.ActiveCfg = Release
-{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.Build.0 = Release
-{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.ActiveCfg = Debug
-{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.Build.0 = Debug
-{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.ActiveCfg = Release
-{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.Build.0 = Release
+		{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.ActiveCfg = Debug
+		{7579511F-64BD-4CCF-B904-81EFFF500005}.Debug|AnyCPU.Build.0 = Debug
+		{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.ActiveCfg = Release
+		{7579511F-64BD-4CCF-B904-81EFFF500005}.Release|AnyCPU.Build.0 = Release
+		{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.ActiveCfg = Debug|Any CPU
+		{D66494E1-5877-4949-984B-62ABB119A3D7}.Debug|AnyCPU.Build.0 = Debug|Any CPU
+		{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.ActiveCfg = Release|Any CPU
+		{D66494E1-5877-4949-984B-62ABB119A3D7}.Release|AnyCPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.TextStylePolicy = $2
+		$2.inheritsSet = null
+		$2.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $3
+		$3.scope = text/x-csharp
+		$0.StandardHeader = $4
+		$0.VersionControlPolicy = $5
 	EndGlobalSection
 EndGlobal

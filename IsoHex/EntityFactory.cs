@@ -18,7 +18,6 @@ namespace IsoHex
 
         public Entity GroundFactory(int x, int y, int height)
         {
-            Contract.Ensures(Contract.Result<Entity>() != null);
             Entity ground = new Entity();
 
             ground.Active =
@@ -31,7 +30,7 @@ namespace IsoHex
             ground.Position.Z = 0;
             ground.Position.height = height;
 
-            ground.Renderable.Pos = new Vector3(x, y, 0);
+            ground.Renderable.pos = new Vector3(x, y, 0);
             ground.Renderable.height = height;
             ground.Renderable.modelID = "ground";
             ground.Renderable.animation = "default";

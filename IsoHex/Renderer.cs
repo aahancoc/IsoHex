@@ -9,15 +9,19 @@ namespace IsoHex
     public class Renderer
     {
         readonly Texture2D DebugDot;
-        GraphicsDeviceManager graphics;
-        GraphicsDevice screen;
+        readonly GraphicsDeviceManager graphics;
+        readonly GraphicsDevice screen;
         readonly SpriteBatch spritebatch;
+		FrameCounter frameCounter;
+
+        Point cameraPos = new Point(0, 0);
 
         public Renderer(GraphicsDeviceManager _graphics, SpriteBatch _spritebatch)
         {
             graphics = _graphics;
             spritebatch = _spritebatch;
             screen = graphics.GraphicsDevice;
+			frameCounter = new FrameCounter();
                 
             // Get SOMETHING we can draw...
             DebugDot = new Texture2D(screen, 1, 1, false, SurfaceFormat.Color);
@@ -66,16 +70,15 @@ namespace IsoHex
             
             // Get every renderable thing
             foreach (var obj in list.Where(x => x.Active.HasFlag(Entity._Active.RENDERABLE))){
+                
                 // Convert coordinates
-                Point centerPos = GetPixelPosition(obj.Renderable.Pos);
+                Point centerPos = GetPixelPosition(obj.Renderable.pos);
+
+
                 // Get sprite width/height & offset by 1/2 that
 
-                // Debug print some info
-                Console.WriteLine("Guid: " + obj.ID + ", X = ", obj.Position.X + "/" + obj.Renderable.Pos.X);
-
 				// Render as a dot for now
-				// Paint a 100x1 line starting at 20, 50
-                spritebatch.Draw(DebugDot, new Rectangle(centerPos.X, centerPos.Y, 8, 8), Color.LawnGreen);
+                spritebatch.Draw(DebugDot, new Rectangle(centerPos.X, centerPos.Y, 8, 8), Color.Green);
             }
         }
 
@@ -84,10 +87,31 @@ namespace IsoHex
             graphics.BeginDraw();
             spritebatch.Begin();
 
+            // Move camera
+            cameraPos.X = (int)(Math.Cos(gametime.TotalGameTime.TotalMilliseconds / 500.0) * 50);
+            cameraPos.Y = (int)(Math.Sin(gametime.TotalGameTime.TotalMilliseconds / 500.0) * 50);
+
+            Viewport viewport = screen.Viewport;
+            viewport.X = cameraPos.X;
+            viewport.Y = cameraPos.Y;
+            screen.Viewport = viewport;
+
+            // BG
+			screen.Clear(Color.CornflowerBlue);
+
             // Entities
             DrawEntities(list, gametime);
 
-            // UI
+			// UI
+
+			// FPS
+			var deltaTime = (float)gametime.ElapsedGameTime.TotalSeconds;
+			frameCounter.Update(deltaTime);
+			var fps = string.Format("FPS: {0}", frameCounter.AverageFramesPerSecond);
+
+            // TODO: figure out how to get font imported.
+            // Content pipeline tools keeps segfaulting, so that's out.
+            //Console.WriteLine(fps);
 
             spritebatch.End();
             graphics.EndDraw();

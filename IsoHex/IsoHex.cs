@@ -22,6 +22,8 @@ namespace IsoHex
 		{
 			graphics = new GraphicsDeviceManager (this);
             entityFactory = new EntityFactory();
+            IsFixedTimeStep = false;
+            IsMouseVisible = true;
 		}
 
 		protected override void Initialize ()
@@ -36,6 +38,7 @@ namespace IsoHex
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch (GraphicsDevice);
 			entityFactory.List.AddRange(entityFactory.TerrainFactory(10, 10));
+
 		}
 
 		protected override void Update (GameTime gameTime)
@@ -45,9 +48,7 @@ namespace IsoHex
 
 		protected override void Draw (GameTime gameTime)
 		{
-            GraphicsDevice.Clear(Color.CornflowerBlue);
             renderer.Draw(entityFactory.List, gameTime);
-			//base.Draw (gameTime);
 		}
 	}
 }
