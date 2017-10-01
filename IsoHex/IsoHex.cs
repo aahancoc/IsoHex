@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,15 +16,16 @@ namespace IsoHex
 	{
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
-        EntityFactory entityFactory;
         Renderer renderer;
+        readonly List<Entity> entities;
 
-		public IsoHex()
+        public IsoHex()
 		{
 			graphics = new GraphicsDeviceManager (this);
-            entityFactory = new EntityFactory();
             IsFixedTimeStep = false;
             IsMouseVisible = true;
+
+            entities = new List<Entity>();
 		}
 
 		protected override void Initialize ()
@@ -37,7 +39,7 @@ namespace IsoHex
 		{
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch (GraphicsDevice);
-			entityFactory.List.AddRange(entityFactory.TerrainFactory(10, 10));
+			entities.AddRange(EntityFactory.TerrainFactory(10, 10));
 
 		}
 
@@ -48,7 +50,7 @@ namespace IsoHex
 
 		protected override void Draw (GameTime gameTime)
 		{
-            renderer.Draw(entityFactory.List, gameTime);
+            renderer.Draw(entities, gameTime);
 		}
 	}
 }

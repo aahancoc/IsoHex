@@ -26,12 +26,6 @@ namespace IsoHex
         // Triangles to draw
         List<VertexPositionColor> tris;
 
-        // constants
-        const float hexsize = 4.0f;
-		const float sqrt3 = 1.73205080757f; // sqrt(3)
-		const float hexheight = hexsize * 2.0f;
-        const float hexwidth = (sqrt3 / 2) * hexheight;
-
         public Renderer(GraphicsDeviceManager _graphics, SpriteBatch _spritebatch)
         {
             graphics = _graphics;
@@ -48,47 +42,6 @@ namespace IsoHex
 			Int32[] pixel = { 0xFFFFFF }; // White. 0xFF is Red, 0xFF0000 is Blue
 			DebugDot.SetData(pixel, 0, 1);
         }
-
-        // Adjust position from hex grid coordinates to on-screen coordinates
-        // We are using "odd-r horizontal layout"
-       Vector3 GetWorldPosition(Vector3 pos){
-
-            Vector3 result = new Vector3();
-            //const float tileHeight = (hexheight / 2.0f); // For now?
-
-            // X should be offset + width/2 if on an odd row
-            float oddness = (float)Math.Abs((pos.Y % 2.0) - 1);
-            result.X = ((pos.X * hexwidth) + ((hexwidth / 2f) * oddness));
-
-			// Y should be multiplied by a scaler
-            result.Y = (pos.Y * (hexheight * 3.0f / 4.0f));
-
-            // Z should be multiplied by a scaler.
-            result.Z = (pos.Z * 10);
-
-            return result;
-        }
-
-        Vector3 GetWorldScale(Vector3 scale){
-            Vector3 result = new Vector3();
-            result.X = scale.X * hexwidth;
-            result.Y = scale.Y * hexheight;
-            result.Z = scale.Z * 10;
-            return result;
-        }
-
-        // Turn Position coodinates into a Renderable coordinate
-        /*void UpdatePosition(Entity obj)
-		{
-            // Check entity componets
-            if(
-                !obj.Active.HasFlag(Entity._Active.POSITION) ||
-                !obj.Active.HasFlag(Entity._Active.RENDERABLE) ||
-                obj.Renderable.hidden == true
-            ){
-                return;
-            }
-		}*/
 
         public void Setup3D(){
             aspRatio = (
@@ -113,7 +66,7 @@ namespace IsoHex
            tris = new List<VertexPositionColor>();
 		}
 
-        public void DrawHexagon(Vector3 center, float height, Color topColor, Color sideColor){
+        public void DrawHexagon(Vector3 center, Vector3 scale, Color topColor, Color sideColor){
 
 			VertexPositionColor[] Verts = new VertexPositionColor[6 * 3 * 3];
             foreach (var i in Enumerable.Range(0, 6))
@@ -124,51 +77,51 @@ namespace IsoHex
 
                 // Surface
                 Verts[i * 9 + 0].Position = new Vector3(
-                    center.X + hexsize * (float)Math.Cos(angle),
-                    center.Y + hexsize * (float)Math.Sin(angle),
-                    center.Z + height
+                    center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
+                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+                    center.Z + scale.Z
                 );
                 Verts[i * 9 + 1].Position = new Vector3(
-                    center.X, center.Y, center.Z + height
+                    center.X, center.Y, center.Z + scale.Z
                 );
                 Verts[i * 9 + 2].Position = new Vector3(
-                    center.X + hexsize * (float)Math.Cos(angleNext),
-                    center.Y + hexsize * (float)Math.Sin(angleNext),
-                    center.Z + height
+                    center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
+                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+                    center.Z + scale.Z
                 );
 
                 // Sides (1)
 				Verts[i * 9 + 3].Position = new Vector3(
-					center.X + hexsize * (float)Math.Cos(angle),
-					center.Y + hexsize * (float)Math.Sin(angle),
-					center.Z + height
+					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
+					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+					center.Z + scale.Z
 				);
 				Verts[i * 9 + 4].Position = new Vector3(
-					center.X + hexsize * (float)Math.Cos(angleNext),
-					center.Y + hexsize * (float)Math.Sin(angleNext),
-					center.Z + height
+					center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
+					center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+					center.Z + scale.Z
 				);
 				Verts[i * 9 + 5].Position = new Vector3(
-					center.X + hexsize * (float)Math.Cos(angle),
-					center.Y + hexsize * (float)Math.Sin(angle),
+					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
+					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
 					center.Z
 				);
 
 				// Sides (2)
 				Verts[i * 9 + 8].Position = new Vector3(
-					center.X + hexsize * (float)Math.Cos(angle),
-					center.Y + hexsize * (float)Math.Sin(angle),
+					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
+					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
 					center.Z
 				);
 				Verts[i * 9 + 7].Position = new Vector3(
-					center.X + hexsize * (float)Math.Cos(angleNext),
-					center.Y + hexsize * (float)Math.Sin(angleNext),
+					center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
+					center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
 					center.Z
 				);
                 Verts[i * 9 + 6].Position = new Vector3(
-                    center.X + hexsize * (float)Math.Cos(angleNext),
-                    center.Y + hexsize * (float)Math.Sin(angleNext),
-                    center.Z + height
+                    center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
+                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+                    center.Z + scale.Z
                 );
 
                 // Top color
@@ -191,20 +144,22 @@ namespace IsoHex
         public void DrawEntities(List<Entity> list, GameTime gametime){
             
             // Get every renderable thing
-            foreach (var obj in list.Where(x => x.Active.HasFlag(Entity._Active.RENDERABLE))){
+            foreach (var obj in list.Where(x => x.Active.HasFlag(Entity._Components.RENDERABLE))){
                 
                 // Convert coordinates
-                Vector3 centerPos = GetWorldPosition(obj.Renderable.pos);
+                Vector3 pos = CoordUtils.GetWorldPosition(obj.Renderable.pos);
+                Vector3 scale = CoordUtils.GetWorldScale(obj.Renderable.scale);
 
                 // Get sprite width/height & offset by 1/2 that
 
 				// Render object depending on model ID
                 switch(obj.Renderable.modelID){
                     case "ground":
-                        DrawHexagon(centerPos, obj.Renderable.height * 10, Color.LawnGreen, Color.LightGray);
+                        DrawHexagon(pos, scale, Color.SpringGreen, Color.SaddleBrown);
                         break;
                     default:
                         //spritebatch.Draw(DebugDot, new Rectangle(centerPos.X, centerPos.Y, 8, 8), Color.Red);
+                        DrawHexagon(pos, scale, Color.Red, Color.DarkRed);
                         break;
                 }
             }

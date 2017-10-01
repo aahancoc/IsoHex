@@ -8,23 +8,16 @@ namespace IsoHex
 {
     public class EntityFactory
     {
-        public List<Entity> List;
-        Random rng = new Random();
-
-        public EntityFactory()
-        {
-            // Just make a list of entities
-            List = new List<Entity>();
-        }
-
-        public Entity GroundFactory(int x, int y, int height)
+        static public Entity GroundFactory(int x, int y, int height)
         {
             Entity ground = new Entity();
 
+            ground.ID = Guid.NewGuid();
+
             ground.Active =
-                Entity._Active.POSITION |
-                Entity._Active.RENDERABLE |
-                Entity._Active.SOLID;
+                Entity._Components.POSITION |
+                Entity._Components.RENDERABLE |
+                Entity._Components.SOLID;
             
             ground.Position.X = x;
             ground.Position.Y = y;
@@ -32,7 +25,8 @@ namespace IsoHex
             ground.Position.height = height;
 
             ground.Renderable.pos = new Vector3(x, y, 0);
-            ground.Renderable.height = height;
+            ground.Renderable.scale = new Vector3(1, 1, height);
+            ground.Renderable.target = ground.Renderable.pos;
             ground.Renderable.modelID = "ground";
             ground.Renderable.animation = "default";
 
@@ -41,9 +35,10 @@ namespace IsoHex
             return ground;
         }
 
-        public List<Entity> TerrainFactory(int width, int depth)
+        static public List<Entity> TerrainFactory(int width, int depth)
         {
             List<Entity> result = new List<Entity>();
+			Random rng = new Random();
 
             foreach(var x in Enumerable.Range(0, width)){
                 foreach (var y in Enumerable.Range(0, depth)){
@@ -53,6 +48,40 @@ namespace IsoHex
             }
 
             return result;
+        }
+
+        static public Entity SwordsmanFactory(int x, int y, int z){
+            Entity chara = new Entity();
+
+            chara.ID = Guid.NewGuid();
+
+            chara.Active =
+                     Entity._Components.POSITION |
+                     Entity._Components.RENDERABLE |
+                     Entity._Components.TEAM |
+                     Entity._Components.MOBILE |
+                     Entity._Components.INTELLIGENT;
+
+            chara.Position.X = x;
+            chara.Position.Y = y;
+            chara.Position.Z = z;
+            chara.Position.dir = Entity._Position._Direction.RIGHT;
+
+            chara.Renderable.name = "Swordsman";
+            chara.Renderable.pos = new Vector3(x, y, z);
+            chara.Renderable.target = chara.Renderable.pos;
+            chara.Renderable.scale = new Vector3(0.5f, 0.5f, 0.8f);
+            chara.Renderable.modelID = "swordsman";
+
+            chara.Team.team = Entity._Team._Teams.RED;
+
+            chara.Mobile.PPCost = 3;
+            chara.Mobile.PPCostPerTile = 1;
+
+            chara.Intelligent.PP = 50;
+            chara.Intelligent.maxPP = 50;
+
+            return chara;
         }
     }
 }

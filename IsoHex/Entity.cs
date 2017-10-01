@@ -3,11 +3,12 @@ using Microsoft.Xna.Framework;
 
 namespace IsoHex
 {
-    // Currently one Entity is 272 bytes. If that matters...
+    // Currently one Entity is about 300 bytes. If that matters...
     public struct Entity
     {
         public Guid ID;
-        public _Active Active;
+        public _Components Active;
+        public _Components NeedsExec;
         public _Position Position;
         public _Renderable Renderable;
         public _Team Team;
@@ -29,7 +30,7 @@ namespace IsoHex
         public delegate void SelfDelegate(Entity x);
 
 		[Flags]
-		public enum _Active
+		public enum _Components
 		{
 			NONE = 0,
 			POSITION = 1 << 0,
@@ -79,9 +80,9 @@ namespace IsoHex
         {
             public string name;
             public Vector3 pos; // tiles
+            public Vector3 scale; // tiles
             public Vector3 target; // tiles, place object is going to
-            public float speed;
-            public float height; // tiles, used for ground tiles and stuff
+            public Vector3 velocity; // tiles/second
             public bool alwaysVisible; // if true, render any blocking 
                                        // objects as wireframe
             public bool hidden; // object can be visible, but isn't right now
@@ -93,7 +94,12 @@ namespace IsoHex
 
         public struct _Team
         {
-            public int team;
+            public _Teams team;
+
+            [Flags] public enum _Teams {
+                RED = 1 << 0, 
+                BLUE = 1 << 1
+            };
         }
 
         // Will update position to match that of a host entity
