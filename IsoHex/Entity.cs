@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace IsoHex
@@ -6,7 +7,6 @@ namespace IsoHex
     // Currently one Entity is about 300 bytes. If that matters...
     public struct Entity
     {
-        public Guid ID;
         public _Components Active;
         public _Components NeedsExec;
         public _Position Position;
@@ -52,11 +52,6 @@ namespace IsoHex
 			MOBILITYFX = 1 << 16
 		}
 
-        /*public Entity(){
-            Active = _Active.NONE;
-            ID = new Guid();
-        }*/
-
         public struct _Position
         {
             public int X; // tiles
@@ -82,7 +77,8 @@ namespace IsoHex
             public Vector3 pos; // tiles
             public Vector3 scale; // tiles
             public Vector3 target; // tiles, place object is going to
-            public Vector3 velocity; // tiles/second
+            //public Vector3 velocity; // tiles/second
+            public float velocity; // tiles/second
             public bool alwaysVisible; // if true, render any blocking 
                                        // objects as wireframe
             public bool hidden; // object can be visible, but isn't right now
@@ -222,7 +218,8 @@ namespace IsoHex
             public int PPCost; // cost to start moving
             public int PPCostPerTile; // cost to keep moving
             public int steepness; // max allowed tile height variance
-            public _Position[] stepArray; // array of places to move to
+            public bool moving; // true if currently moving (to first value in stepArray)
+            public Stack<_Position> stepArray; // array of places to move to
         }
 
         // ATK/DEF boosts. Should get consumed immediately after attachement.

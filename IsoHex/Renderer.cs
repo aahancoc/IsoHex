@@ -141,19 +141,19 @@ namespace IsoHex
             tris.AddRange(Verts);
         }
 
-        public void DrawEntities(List<Entity> list, GameTime gametime){
+        public void DrawEntities(Dictionary<Guid, Entity> list, GameTime gametime){
             
             // Get every renderable thing
-            foreach (var obj in list.Where(x => x.Active.HasFlag(Entity._Components.RENDERABLE))){
+            foreach (var obj in list.Where(x => x.Value.Active.HasFlag(Entity._Components.RENDERABLE))){
                 
                 // Convert coordinates
-                Vector3 pos = CoordUtils.GetWorldPosition(obj.Renderable.pos);
-                Vector3 scale = CoordUtils.GetWorldScale(obj.Renderable.scale);
+                Vector3 pos = CoordUtils.GetWorldPosition(obj.Value.Renderable.pos);
+                Vector3 scale = CoordUtils.GetWorldScale(obj.Value.Renderable.scale);
 
                 // Get sprite width/height & offset by 1/2 that
 
 				// Render object depending on model ID
-                switch(obj.Renderable.modelID){
+                switch(obj.Value.Renderable.modelID){
                     case "ground":
                         DrawHexagon(pos, scale, Color.SpringGreen, Color.SaddleBrown);
                         break;
@@ -165,7 +165,7 @@ namespace IsoHex
             }
         }
 
-        public void Draw(List<Entity> list, GameTime gametime){
+        public void Draw(Dictionary<Guid, Entity> list, GameTime gametime){
 
             graphics.BeginDraw();
 
@@ -175,11 +175,6 @@ namespace IsoHex
 
             // Set camera data
 			Setup3D();
-
-            /*Viewport viewport = screen.Viewport;
-            viewport.X = cameraPos.X;
-            viewport.Y = cameraPos.Y;
-            screen.Viewport = viewport;*/
 
             // BG
 			screen.Clear(Color.CornflowerBlue);
@@ -203,7 +198,7 @@ namespace IsoHex
 			// FPS
 			var deltaTime = (float)gametime.ElapsedGameTime.TotalSeconds;
 			frameCounter.Update(deltaTime);
-			var fps = string.Format("FPS: {0}", frameCounter.AverageFramesPerSecond);
+            var fps = string.Format("FPS: {0}", frameCounter.CurrentFramesPerSecond);
 
             // TODO: figure out how to get font imported.
             // Content pipeline tools keeps segfaulting, so that's out.

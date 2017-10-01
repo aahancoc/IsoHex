@@ -12,8 +12,6 @@ namespace IsoHex
         {
             Entity ground = new Entity();
 
-            ground.ID = Guid.NewGuid();
-
             ground.Active =
                 Entity._Components.POSITION |
                 Entity._Components.RENDERABLE |
@@ -52,8 +50,6 @@ namespace IsoHex
 
         static public Entity SwordsmanFactory(int x, int y, int z){
             Entity chara = new Entity();
-
-            chara.ID = Guid.NewGuid();
 
             chara.Active =
                      Entity._Components.POSITION |

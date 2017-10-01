@@ -17,7 +17,7 @@ namespace IsoHex
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
         Renderer renderer;
-        readonly List<Entity> entities;
+        Dictionary<Guid, Entity> entities;
 
         public IsoHex()
 		{
@@ -25,21 +25,25 @@ namespace IsoHex
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
-            entities = new List<Entity>();
+            entities = new Dictionary<Guid, Entity>();
 		}
 
 		protected override void Initialize ()
 		{
 			base.Initialize ();
 
+			// Create a new SpriteBatch, which can be used to draw textures.
+			spriteBatch = new SpriteBatch(GraphicsDevice);
+
 			renderer = new Renderer(graphics, spriteBatch);
 		}
 
 		protected override void LoadContent ()
 		{
-			// Create a new SpriteBatch, which can be used to draw textures.
-			spriteBatch = new SpriteBatch (GraphicsDevice);
-			entities.AddRange(EntityFactory.TerrainFactory(10, 10));
+            // Generate terrain
+            foreach (Entity x in EntityFactory.TerrainFactory(10, 10)){
+                entities.Add(Guid.NewGuid(), x);
+            }
 
 		}
 
