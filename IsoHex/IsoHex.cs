@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Media;
 namespace IsoHex
 {
 	/// <summary>
-	/// This is the main type for your game.
+	/// Main game loop for IsoHex
 	/// </summary>
 	public class IsoHex : Game
 	{

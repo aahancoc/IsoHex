@@ -8,6 +8,13 @@ namespace IsoHex
 {
     public class EntityFactory
     {
+        /// <summary>
+        /// Generates a ground tile entity
+        /// </summary>
+        /// <returns>A ground tile entity.</returns>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <param name="height">Height.</param>
         static public Entity GroundFactory(int x, int y, int height)
         {
             Entity ground = new Entity();
@@ -33,6 +40,12 @@ namespace IsoHex
             return ground;
         }
 
+        /// <summary>
+        /// Generates many ground tiles comprising a whole rectangular playfield
+        /// </summary>
+        /// <returns>List of ground tile entities</returns>
+        /// <param name="width">Width.</param>
+        /// <param name="depth">Depth.</param>
         static public List<Entity> TerrainFactory(int width, int depth)
         {
             List<Entity> result = new List<Entity>();
@@ -48,6 +61,13 @@ namespace IsoHex
             return result;
         }
 
+        /// <summary>
+        /// Generate a Swordsman entity
+        /// </summary>
+        /// <returns>A Swordsman entity</returns>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <param name="z">The z coordinate.</param>
         static public Entity SwordsmanFactory(int x, int y, int z){
             Entity chara = new Entity();
 

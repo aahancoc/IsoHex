@@ -14,8 +14,12 @@ namespace IsoHex
 		const float hexheight = hexsize * 2.0f;
 		const float hexwidth = (sqrt3 / 2) * hexheight;
 
-		// Adjust position from hex grid coordinates to on-screen coordinates
-		// We are using "odd-r horizontal layout"
+		/// <summary>
+		/// Adjust position from tile coordinates to world coordinates
+		/// We are using "odd-r horizontal layout"
+		/// </summary>
+		/// <returns>The world position.</returns>
+		/// <param name="pos">Position.</param>
 		static public Vector3 GetWorldPosition(Vector3 pos)
 		{
 			Vector3 result = new Vector3();
@@ -33,6 +37,12 @@ namespace IsoHex
 			return result;
 		}
 
+		/// <summary>
+		/// Adjust position from tile coordinates to world coordinates
+		/// We are using "odd-r horizontal layout"
+		/// </summary>
+		/// <returns>The world position.</returns>
+		/// <param name="pos">Position.</param>
 		static public Vector2 GetWorldPosition(Vector2 pos)
 		{
 			Vector3 src = new Vector3(pos.X, pos.Y, 0);
@@ -40,7 +50,11 @@ namespace IsoHex
 			return new Vector2(dest.X, dest.Y);
 		}
 
-        // Scale from tile coords to world coords
+		/// <summary>
+		/// Scale from tile coords to world coords
+		/// </summary>
+		/// <returns>The world scale.</returns>
+		/// <param name="scale">Scale.</param>
 		static public Vector3 GetWorldScale(Vector3 scale)
 		{
 			Vector3 result = new Vector3();

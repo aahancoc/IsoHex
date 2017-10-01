@@ -26,6 +26,11 @@ namespace IsoHex
         // Triangles to draw
         List<VertexPositionColor> tris;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:IsoHex.Renderer"/> class.
+        /// </summary>
+        /// <param name="_graphics">Graphics.</param>
+        /// <param name="_spritebatch">Spritebatch.</param>
         public Renderer(GraphicsDeviceManager _graphics, SpriteBatch _spritebatch)
         {
             graphics = _graphics;
@@ -43,6 +48,9 @@ namespace IsoHex
 			DebugDot.SetData(pixel, 0, 1);
         }
 
+        /// <summary>
+        /// Setups the camera for 3D rendering
+        /// </summary>
         public void Setup3D(){
             aspRatio = (
                 graphics.PreferredBackBufferWidth /
@@ -66,6 +74,13 @@ namespace IsoHex
            tris = new List<VertexPositionColor>();
 		}
 
+        /// <summary>
+        /// Draws a hexagon.
+        /// </summary>
+        /// <param name="center">Center.</param>
+        /// <param name="scale">Scale.</param>
+        /// <param name="topColor">Top color.</param>
+        /// <param name="sideColor">Side color.</param>
         public void DrawHexagon(Vector3 center, Vector3 scale, Color topColor, Color sideColor){
 
 			VertexPositionColor[] Verts = new VertexPositionColor[6 * 3 * 3];
@@ -141,6 +156,11 @@ namespace IsoHex
             tris.AddRange(Verts);
         }
 
+        /// <summary>
+        /// Draws the entities.
+        /// </summary>
+        /// <param name="list">Entity list.</param>
+        /// <param name="gametime">Gametime.</param>
         public void DrawEntities(Dictionary<Guid, Entity> list, GameTime gametime){
             
             // Get every renderable thing
@@ -165,6 +185,11 @@ namespace IsoHex
             }
         }
 
+        /// <summary>
+        /// Draw everything
+        /// </summary>
+        /// <param name="list">Entity list.</param>
+        /// <param name="gametime">Gametime.</param>
         public void Draw(Dictionary<Guid, Entity> list, GameTime gametime){
 
             graphics.BeginDraw();

@@ -97,7 +97,7 @@ namespace IsoHex
 		}
 
         /// <summary>
-        /// Updates the entity.
+        /// Updates the entity's components
         /// </summary>
         /// <param name="entity">Entity.</param>
         /// <param name="gametime">Gametime.</param>
