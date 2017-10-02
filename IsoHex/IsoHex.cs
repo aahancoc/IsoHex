@@ -17,8 +17,8 @@ namespace IsoHex
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
         Renderer renderer;
-        Dictionary<Guid, Entity> entities;
-        Guid currFocus;
+        readonly Dictionary<Guid, Entity> entities;
+        readonly UI ui;
 
         public IsoHex()
 		{
@@ -27,6 +27,7 @@ namespace IsoHex
             IsMouseVisible = true;
 
             entities = new Dictionary<Guid, Entity>();
+			ui = new UI();
 		}
 
 		protected override void Initialize ()
@@ -35,7 +36,6 @@ namespace IsoHex
 
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
-
 			renderer = new Renderer(graphics, spriteBatch);
 		}
 
@@ -47,10 +47,10 @@ namespace IsoHex
             }
 
             // Create a swordsman
-            currFocus = Guid.NewGuid();
+            ui.focusedEntity = Guid.NewGuid();
 
             entities.Add(
-                currFocus,
+                ui.focusedEntity,
                 EntityFactory.SwordsmanFactory(
                     0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
                 )
@@ -61,14 +61,11 @@ namespace IsoHex
 		protected override void Update (GameTime gameTime)
 		{
 			base.Update (gameTime);
-
-			// Focus camera on swordsman
-			renderer.SetFocus(currFocus, entities);
 		}
 
 		protected override void Draw (GameTime gameTime)
 		{
-            renderer.Draw(entities, gameTime);
+            renderer.Draw(entities, gameTime, ui);
 		}
 	}
 }

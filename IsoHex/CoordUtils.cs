@@ -57,11 +57,11 @@ namespace IsoHex
 		/// <param name="scale">Scale.</param>
 		static public Vector3 GetWorldScale(Vector3 scale)
 		{
-			Vector3 result = new Vector3();
-			result.X = scale.X * hexsize;
-			result.Y = scale.Y * hexsize;
-			result.Z = scale.Z * 10;
-			return result;
+            return new Vector3(
+                scale.X * hexsize,
+                scale.Y * hexsize,
+                scale.Z * 10
+            );
 		}
     }
 }

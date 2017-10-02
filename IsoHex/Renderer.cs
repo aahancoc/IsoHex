@@ -15,12 +15,10 @@ namespace IsoHex
         readonly FrameCounter frameCounter;
 
         // Camera
-        Vector3 cameraPos = new Vector3(0, 0, 80);
 		Vector3 cameraLookAt = Vector3.Zero;
-		Vector3 cameraUp = Vector3.UnitZ;
         float aspRatio;
-        const float nearClip = 1;
-        const float farClip = 2000;
+        const float nearClip = 0.1f;
+        const float farClip = 2000f;
         readonly BasicEffect effect;
 
         // Triangles to draw
@@ -38,6 +36,7 @@ namespace IsoHex
             screen = graphics.GraphicsDevice;
 			frameCounter = new FrameCounter();
             effect = new BasicEffect(screen);
+			effect.VertexColorEnabled = true;
 
             //screen.BlendState = BlendState.Opaque;
             //screen.DepthStencilState = DepthStencilState.Default;
@@ -49,29 +48,60 @@ namespace IsoHex
         }
 
         /// <summary>
-        /// Setups the camera for 3D rendering
+        /// Set up the camera.
+        /// </summary>
+        /// <param name="ui">UI/Camera parameters.</param>
+        /// <param name="entities">Entity list.</param>
+        public void SetupCamera(UI ui, Dictionary<Guid, Entity> entities){
+
+            // Set camera focus
+            SetFocus(ui.focusedEntity, entities);
+
+            // Set angle and position
+            Vector3 cameraPos = new Vector3(
+                (float)Math.Cos(ui.yaw) * (float)Math.Cos(ui.pitch),
+                (float)Math.Sin(ui.yaw) * (float)Math.Cos(ui.pitch),
+                (float)Math.Sin(ui.pitch)
+            ) * ui.zoomLevel + cameraLookAt;
+
+            effect.View = Matrix.CreateLookAt(
+                cameraPos,
+                cameraLookAt,
+                Vector3.UnitZ          
+            );
+
+            // Zoom, too
+			effect.Projection = Matrix.CreateOrthographic(
+                ui.zoomLevel, ui.zoomLevel * aspRatio, nearClip, farClip
+            );
+
+            Console.WriteLine(
+                "Yaw: " + ui.yaw + "\n" +
+                "Pitch: " + ui.pitch + "\n" +
+                "Obj Pos: " + cameraLookAt.ToString() + "\n" +
+                "Cam Pos: " + cameraPos.ToString() + "\n" 
+            );
+        }
+
+        /// <summary>
+        /// Sets up the 3D renderer for the next frame
         /// </summary>
         public void Setup3D(){
+
+            // Set aspect ratio
             aspRatio = (
                 graphics.PreferredBackBufferWidth /
                 graphics.PreferredBackBufferHeight
             );
 
-			effect.Projection = Matrix.CreateOrthographic(
-                50, 50, nearClip, farClip
-            );
-
-			effect.View = Matrix.CreateLookAt(
-		        cameraPos, cameraLookAt, cameraUp
-            );
-
-            effect.VertexColorEnabled = true;
-
-			/*effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-		        fov, aspRatio, nearClip, farClip
+            /*effect.Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                aspRatio,
+                nearClip,
+                farClip
             );*/
 
-           tris = new List<VertexPositionColor>();
+            tris = new List<VertexPositionColor>();
 		}
 
         /// <summary>
@@ -83,75 +113,114 @@ namespace IsoHex
         /// <param name="sideColor">Side color.</param>
         public void DrawHexagon(Vector3 center, Vector3 scale, Color topColor, Color sideColor){
 
-			VertexPositionColor[] Verts = new VertexPositionColor[6 * 3 * 3];
-            foreach (var i in Enumerable.Range(0, 6))
-            {
-                // Create vertices
-                float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
-                float angleNext = angle + ((float)Math.PI / 3);
+            VertexPositionColor[] Verts;
 
-                // Surface
-                Verts[i * 9 + 0].Position = new Vector3(
-                    center.X + scale.X * (float)Math.Cos(angle),
-                    center.Y + scale.Y * (float)Math.Sin(angle),
-                    center.Z + scale.Z
-                );
-                Verts[i * 9 + 1].Position = new Vector3(
-                    center.X, center.Y, center.Z + scale.Z
-                );
-                Verts[i * 9 + 2].Position = new Vector3(
-                    center.X + scale.X * (float)Math.Cos(angleNext),
-                    center.Y + scale.Y * (float)Math.Sin(angleNext),
-                    center.Z + scale.Z
-                );
+            // Flat hexagon
+            if (Equals(scale.Z, 0)) {
+                Verts = new VertexPositionColor[6 * 3];
 
-                // Sides (1)
-				Verts[i * 9 + 3].Position = new Vector3(
-					center.X + scale.X * (float)Math.Cos(angle),
-					center.Y + scale.Y * (float)Math.Sin(angle),
-					center.Z + scale.Z
-				);
-				Verts[i * 9 + 4].Position = new Vector3(
-					center.X + scale.X * (float)Math.Cos(angleNext),
-					center.Y + scale.Y * (float)Math.Sin(angleNext),
-					center.Z + scale.Z
-				);
-				Verts[i * 9 + 5].Position = new Vector3(
-					center.X + scale.X * (float)Math.Cos(angle),
-					center.Y + scale.Y * (float)Math.Sin(angle),
-					center.Z
-				);
+                foreach (var i in Enumerable.Range(0, 2))
+                {
+                    // Create vertices
+                    float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
+                    float angleNext = angle + ((float)Math.PI / 3);
 
-				// Sides (2)
-				Verts[i * 9 + 8].Position = new Vector3(
-					center.X + scale.X * (float)Math.Cos(angle),
-					center.Y + scale.Y * (float)Math.Sin(angle),
-					center.Z
-				);
-				Verts[i * 9 + 7].Position = new Vector3(
-					center.X + scale.X * (float)Math.Cos(angleNext),
-					center.Y + scale.Y * (float)Math.Sin(angleNext),
-					center.Z
-				);
-                Verts[i * 9 + 6].Position = new Vector3(
-                    center.X + scale.X * (float)Math.Cos(angleNext),
-                    center.Y + scale.Y * (float)Math.Sin(angleNext),
-                    center.Z + scale.Z
-                );
+                    // Surface
+                    Verts[i * 9 + 0].Position = new Vector3(
+                        center.X + scale.X * (float)Math.Cos(angle),
+                        center.Y + scale.Y * (float)Math.Sin(angle),
+                        center.Z + scale.Z
+                    );
+                    Verts[i * 9 + 1].Position = new Vector3(
+                        center.X, center.Y, center.Z + scale.Z
+                    );
+                    Verts[i * 9 + 2].Position = new Vector3(
+                        center.X + scale.X * (float)Math.Cos(angleNext),
+                        center.Y + scale.Y * (float)Math.Sin(angleNext),
+                        center.Z + scale.Z
+                    );
 
-                // Top color
-                Verts[i * 9 + 0].Color = topColor;
-                Verts[i * 9 + 1].Color = topColor;
-                Verts[i * 9 + 2].Color = topColor;
-
-				// Side colors
-				Verts[i * 9 + 3].Color = sideColor;
-				Verts[i * 9 + 4].Color = sideColor;
-				Verts[i * 9 + 5].Color = sideColor;
-                Verts[i * 9 + 6].Color = sideColor;
-                Verts[i * 9 + 7].Color = sideColor;
-                Verts[i * 9 + 8].Color = sideColor;
+					// Top color
+					Verts[i * 9 + 0].Color = topColor;
+					Verts[i * 9 + 1].Color = topColor;
+					Verts[i * 9 + 2].Color = topColor;
+                }
             }
+            // 3D hexagon (no bottom)
+            else {
+                Verts = new VertexPositionColor[6 * 3 * 3];
+
+				foreach (var i in Enumerable.Range(0, 6))
+				{
+					// Create vertices
+					float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
+					float angleNext = angle + ((float)Math.PI / 3);
+
+					// Surface
+					Verts[i * 9 + 0].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angle),
+						center.Y + scale.Y * (float)Math.Sin(angle),
+						center.Z + scale.Z
+					);
+					Verts[i * 9 + 1].Position = new Vector3(
+						center.X, center.Y, center.Z + scale.Z
+					);
+					Verts[i * 9 + 2].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angleNext),
+						center.Y + scale.Y * (float)Math.Sin(angleNext),
+						center.Z + scale.Z
+					);
+
+					// Sides (1)
+					Verts[i * 9 + 3].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angle),
+						center.Y + scale.Y * (float)Math.Sin(angle),
+						center.Z + scale.Z
+					);
+					Verts[i * 9 + 4].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angleNext),
+						center.Y + scale.Y * (float)Math.Sin(angleNext),
+						center.Z + scale.Z
+					);
+					Verts[i * 9 + 5].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angle),
+						center.Y + scale.Y * (float)Math.Sin(angle),
+						center.Z
+					);
+
+					// Sides (2)
+					Verts[i * 9 + 8].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angle),
+						center.Y + scale.Y * (float)Math.Sin(angle),
+						center.Z
+					);
+					Verts[i * 9 + 7].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angleNext),
+						center.Y + scale.Y * (float)Math.Sin(angleNext),
+						center.Z
+					);
+					Verts[i * 9 + 6].Position = new Vector3(
+						center.X + scale.X * (float)Math.Cos(angleNext),
+						center.Y + scale.Y * (float)Math.Sin(angleNext),
+						center.Z + scale.Z
+					);
+
+					// Top color
+					Verts[i * 9 + 0].Color = topColor;
+					Verts[i * 9 + 1].Color = topColor;
+					Verts[i * 9 + 2].Color = topColor;
+
+					// Side colors
+					Verts[i * 9 + 3].Color = sideColor;
+					Verts[i * 9 + 4].Color = sideColor;
+					Verts[i * 9 + 5].Color = sideColor;
+					Verts[i * 9 + 6].Color = sideColor;
+					Verts[i * 9 + 7].Color = sideColor;
+					Verts[i * 9 + 8].Color = sideColor;
+				}
+            }
+
+
 
             tris.AddRange(Verts);
         }
@@ -168,8 +237,7 @@ namespace IsoHex
             if (!entity.Active.HasFlag(Entity._Components.RENDERABLE)) { return false; }
 
             cameraLookAt = CoordUtils.GetWorldPosition(entity.Renderable.pos);
-
-            return true;
+			return true;
         }
 
         /// <summary>
@@ -206,47 +274,51 @@ namespace IsoHex
         /// </summary>
         /// <param name="list">Entity list.</param>
         /// <param name="gametime">Gametime.</param>
-        public void Draw(Dictionary<Guid, Entity> list, GameTime gametime){
+        public void Draw(Dictionary<Guid, Entity> list, GameTime gametime, UI ui){
 
+            // Begin draw
             graphics.BeginDraw();
 
             // Rotate camera
-            cameraPos.X = (int)(Math.Cos(gametime.TotalGameTime.TotalMilliseconds / 1000.0) * 50);
-            cameraPos.Y = (int)(Math.Sin(gametime.TotalGameTime.TotalMilliseconds / 1000.0) * 50);
+            //cameraLookAt.X = (float)(Math.Cos(gametime.TotalGameTime.TotalMilliseconds / 1000.0) * 5.0f);
+            //cameraLookAt.Y = (float)(Math.Sin(gametime.TotalGameTime.TotalMilliseconds / 1000.0) * 5.0f);
+            ui.yaw = (float)(ui.yaw - (gametime.ElapsedGameTime.TotalMilliseconds / 10000.0)) % MathHelper.TwoPi;
 
-            // Set camera data
-			Setup3D();
+            // Set camera and 3D renderer
+            SetupCamera(ui, list);
+            Setup3D();
 
             // BG
-			screen.Clear(Color.CornflowerBlue);
+            screen.Clear(Color.CornflowerBlue);
 
-			// Add entities to render list
-			DrawEntities(list, gametime);
+            // Add entities to render list
+            DrawEntities(list, gametime);
 
-			// Draw all triangles
-			foreach (var pass in effect.CurrentTechnique.Passes)
-			{
-				pass.Apply();
+            // Draw all triangles
+            foreach (var pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
                 graphics.GraphicsDevice.DrawUserPrimitives(
                     PrimitiveType.TriangleList, tris.ToArray(), 0, tris.Count() / 3
                 );
-			}
+            }
 
-			//spritebatch.Begin();
+            // UI
+            //spritebatch.Begin();
 
-			// UI
+            //spritebatch.End();
 
-			// FPS
-			var deltaTime = (float)gametime.ElapsedGameTime.TotalSeconds;
-			frameCounter.Update(deltaTime);
+            // End draw
+            graphics.EndDraw();
+
+            // FPS
+            var deltaTime = (float)gametime.ElapsedGameTime.TotalSeconds;
+            frameCounter.Update(deltaTime);
             var fps = string.Format("FPS: {0}", frameCounter.CurrentFramesPerSecond);
 
             // TODO: figure out how to get font imported.
             // Content pipeline tools keeps segfaulting, so that's out.
-            Console.WriteLine(fps);
-
-            //spritebatch.End();
-            graphics.EndDraw();
+            //Console.WriteLine(fps);
         }
     }
 }
