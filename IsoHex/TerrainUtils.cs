@@ -12,7 +12,7 @@ namespace IsoHex
 		/// </summary>
 		/// <returns>The terrain.</returns>
 		/// <param name="list">Entity list.</param>
-		static IEnumerable<KeyValuePair<Guid,Entity>> FilterTerrain(Dictionary<Guid, Entity> list){
+		static public IEnumerable<KeyValuePair<Guid,Entity>> FilterTerrain(Dictionary<Guid, Entity> list){
 			var query =
 				from e in list
 				where e.Value.Active.HasFlag(Entity._Components.POSITION) &&
@@ -23,14 +23,14 @@ namespace IsoHex
             return query;
         }
 
-		/// <summary>
-		/// Given a known x/y tile position, retreive the highest Z
-		/// </summary>
-		/// <returns>The height of the tile.</returns>
-		/// <param name="x">The x coordinate.</param>
-		/// <param name="y">The y coordinate.</param>
-		/// <param name="list">Entity list.</param>
-		static int GetHeightTile(int x, int y, Dictionary<Guid, Entity> list){
+        /// <summary>
+        /// Given a known x/y tile position, retreive the highest Z
+        /// </summary>
+        /// <returns>The height of the tile.</returns>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <param name="list">Entity list.</param>
+        static public int GetHeightFromTile(int x, int y, Dictionary<Guid, Entity> list){
             var query =
                 from e in list
                 where e.Value.Active.HasFlag(Entity._Components.POSITION) &&
@@ -38,14 +38,25 @@ namespace IsoHex
 					  e.Value.Solid.walkable &&
                       e.Value.Position.X == x &&
                       e.Value.Position.Y == y
-                orderby e.Value.Position.Z descending
-            	select e.Value.Position.Z;
+                orderby (e.Value.Position.Z + e.Value.Position.height) descending
+            	select (e.Value.Position.Z + e.Value.Position.height);
 
             foreach (int z in query){return z;}
             return -1;
         }
 
-		// Given a known x/y world position, retrives the highest Z
+		/// <summary>
+		/// Given a known x/y world position, retreives the highest Z
+		/// </summary>
+		/// <returns>The height at the given world coordinates.</returns>
+		/// <param name="pos">Position.</param>
+		/// <param name="list">Entity list.</param>
+		static public float GetHeightFromWorld(Vector2 pos, Dictionary<Guid, Entity> list){
+            // Just find the nearest tile and get the height of that!
+            Guid nearID = GetNearestTile(pos, list);
+            Entity nearTile = list[nearID];
+            return nearTile.Position.Z + nearTile.Position.height;
+        }
 
 		/// <summary>
 		/// Given a 2D vector, finds the nearest ground tile
@@ -53,7 +64,7 @@ namespace IsoHex
 		/// <returns>The nearest tile.</returns>
 		/// <param name="src">Source Position.</param>
 		/// <param name="list">Entity list.</param>
-		static Guid GetNearestTile(Vector2 src, Dictionary<Guid, Entity> list)
+		static public Guid GetNearestTile(Vector2 src, Dictionary<Guid, Entity> list)
         {
             src = CoordUtils.GetWorldPosition(src);
             float shortestDist = float.PositiveInfinity;
@@ -80,7 +91,7 @@ namespace IsoHex
 		/// <returns>The nearest tile.</returns>
 		/// <param name="src">Source Position.</param>
 		/// <param name="list">Entity list.</param>
-		static Guid GetNearestTile(Vector3 src, Dictionary<Guid, Entity> list)
+		static public Guid GetNearestTile(Vector3 src, Dictionary<Guid, Entity> list)
 		{
             src = CoordUtils.GetWorldPosition(src);
 			float shortestDist = float.PositiveInfinity;

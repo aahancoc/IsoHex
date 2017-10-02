@@ -45,7 +45,7 @@ namespace IsoHex
 		/// <param name="pos">Position.</param>
 		static public Vector2 GetWorldPosition(Vector2 pos)
 		{
-			Vector3 src = new Vector3(pos.X, pos.Y, 0);
+			Vector3 src = new Vector3(pos, 0);
 			Vector3 dest = GetWorldPosition(src);
 			return new Vector2(dest.X, dest.Y);
 		}
@@ -58,8 +58,8 @@ namespace IsoHex
 		static public Vector3 GetWorldScale(Vector3 scale)
 		{
 			Vector3 result = new Vector3();
-			result.X = scale.X * hexwidth;
-			result.Y = scale.Y * hexheight;
+			result.X = scale.X * hexsize;
+			result.Y = scale.Y * hexsize;
 			result.Z = scale.Z * 10;
 			return result;
 		}

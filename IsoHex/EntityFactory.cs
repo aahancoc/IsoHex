@@ -53,7 +53,7 @@ namespace IsoHex
 
             foreach(var x in Enumerable.Range(0, width)){
                 foreach (var y in Enumerable.Range(0, depth)){
-                    int height = rng.Next(1, 5);
+                    int height = rng.Next(0, 3);
                     result.Add(GroundFactory(x, y, height));
                 }
             }

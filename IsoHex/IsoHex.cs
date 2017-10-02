@@ -18,6 +18,7 @@ namespace IsoHex
 		SpriteBatch spriteBatch;
         Renderer renderer;
         Dictionary<Guid, Entity> entities;
+        Guid currFocus;
 
         public IsoHex()
 		{
@@ -45,11 +46,24 @@ namespace IsoHex
                 entities.Add(Guid.NewGuid(), x);
             }
 
+            // Create a swordsman
+            currFocus = Guid.NewGuid();
+
+            entities.Add(
+                currFocus,
+                EntityFactory.SwordsmanFactory(
+                    0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
+                )
+            );
+
 		}
 
 		protected override void Update (GameTime gameTime)
 		{
 			base.Update (gameTime);
+
+			// Focus camera on swordsman
+			renderer.SetFocus(currFocus, entities);
 		}
 
 		protected override void Draw (GameTime gameTime)

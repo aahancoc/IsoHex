@@ -15,7 +15,7 @@ namespace IsoHex
         readonly FrameCounter frameCounter;
 
         // Camera
-        Vector3 cameraPos = new Vector3(0, 0, 40);
+        Vector3 cameraPos = new Vector3(0, 0, 80);
 		Vector3 cameraLookAt = Vector3.Zero;
 		Vector3 cameraUp = Vector3.UnitZ;
         float aspRatio;
@@ -92,50 +92,50 @@ namespace IsoHex
 
                 // Surface
                 Verts[i * 9 + 0].Position = new Vector3(
-                    center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
-                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+                    center.X + scale.X * (float)Math.Cos(angle),
+                    center.Y + scale.Y * (float)Math.Sin(angle),
                     center.Z + scale.Z
                 );
                 Verts[i * 9 + 1].Position = new Vector3(
                     center.X, center.Y, center.Z + scale.Z
                 );
                 Verts[i * 9 + 2].Position = new Vector3(
-                    center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
-                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+                    center.X + scale.X * (float)Math.Cos(angleNext),
+                    center.Y + scale.Y * (float)Math.Sin(angleNext),
                     center.Z + scale.Z
                 );
 
                 // Sides (1)
 				Verts[i * 9 + 3].Position = new Vector3(
-					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
-					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+					center.X + scale.X * (float)Math.Cos(angle),
+					center.Y + scale.Y * (float)Math.Sin(angle),
 					center.Z + scale.Z
 				);
 				Verts[i * 9 + 4].Position = new Vector3(
-					center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
-					center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+					center.X + scale.X * (float)Math.Cos(angleNext),
+					center.Y + scale.Y * (float)Math.Sin(angleNext),
 					center.Z + scale.Z
 				);
 				Verts[i * 9 + 5].Position = new Vector3(
-					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
-					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+					center.X + scale.X * (float)Math.Cos(angle),
+					center.Y + scale.Y * (float)Math.Sin(angle),
 					center.Z
 				);
 
 				// Sides (2)
 				Verts[i * 9 + 8].Position = new Vector3(
-					center.X + CoordUtils.hexsize * (float)Math.Cos(angle),
-					center.Y + CoordUtils.hexsize * (float)Math.Sin(angle),
+					center.X + scale.X * (float)Math.Cos(angle),
+					center.Y + scale.Y * (float)Math.Sin(angle),
 					center.Z
 				);
 				Verts[i * 9 + 7].Position = new Vector3(
-					center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
-					center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+					center.X + scale.X * (float)Math.Cos(angleNext),
+					center.Y + scale.Y * (float)Math.Sin(angleNext),
 					center.Z
 				);
                 Verts[i * 9 + 6].Position = new Vector3(
-                    center.X + CoordUtils.hexsize * (float)Math.Cos(angleNext),
-                    center.Y + CoordUtils.hexsize * (float)Math.Sin(angleNext),
+                    center.X + scale.X * (float)Math.Cos(angleNext),
+                    center.Y + scale.Y * (float)Math.Sin(angleNext),
                     center.Z + scale.Z
                 );
 
@@ -154,6 +154,22 @@ namespace IsoHex
             }
 
             tris.AddRange(Verts);
+        }
+
+        /// <summary>
+        /// Sets the focus of the camera
+        /// </summary>
+        /// <returns><c>true</c>, if focus was set, <c>false</c> otherwise.</returns>
+        /// <param name="ID">Entity identifier.</param>
+        /// <param name="list">Entity list.</param>
+        public bool SetFocus(Guid ID, Dictionary<Guid, Entity> list){
+            if (!list.ContainsKey(ID)) { return false; }
+            Entity entity = list[ID];
+            if (!entity.Active.HasFlag(Entity._Components.RENDERABLE)) { return false; }
+
+            cameraLookAt = CoordUtils.GetWorldPosition(entity.Renderable.pos);
+
+            return true;
         }
 
         /// <summary>
