@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace IsoHex
 {
-    public class EntityFactory
+    public static class EntityFactory
     {
         /// <summary>
         /// Generates a ground tile entity
@@ -62,13 +62,45 @@ namespace IsoHex
         }
 
         /// <summary>
+        /// Generates the cursor object for a team
+        /// </summary>
+        /// <returns>A cursor entity.</returns>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <param name="z">The z coordinate.</param>
+        static public Entity CursorFactory(int x, int y, int z)
+        {
+			Entity cursor = new Entity();
+
+            cursor.Active =
+                     Entity._Components.POSITION |
+                     Entity._Components.RENDERABLE |
+                     Entity._Components.TEAM;
+
+            cursor.Position.X = x;
+			cursor.Position.Y = y;
+			cursor.Position.Z = z;
+			cursor.Position.dir = Entity._Position._Direction.RIGHT;
+
+			cursor.Renderable.pos = new Vector3(x, y, z);
+			cursor.Renderable.target = cursor.Renderable.pos;
+			cursor.Renderable.scale = new Vector3(0.75f, 0.75f, 1f);
+			cursor.Renderable.modelID = "cursor";
+
+			cursor.Team.team = Entity._Team._Teams.RED;
+
+            return cursor;
+        }
+
+        /// <summary>
         /// Generate a Swordsman entity
         /// </summary>
         /// <returns>A Swordsman entity</returns>
         /// <param name="x">The x coordinate.</param>
         /// <param name="y">The y coordinate.</param>
         /// <param name="z">The z coordinate.</param>
-        static public Entity SwordsmanFactory(int x, int y, int z){
+        static public Entity SwordsmanFactory(int x, int y, int z)
+        {
             Entity chara = new Entity();
 
             chara.Active =

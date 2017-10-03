@@ -22,7 +22,12 @@ namespace IsoHex
         readonly BasicEffect effect;
 
         // Triangles to draw
-        List<VertexPositionColor> tris;
+        List<VertexPositionColor> tris = new List<VertexPositionColor>();
+        List<VertexPositionColor> wiretris = new List<VertexPositionColor>();
+
+		// Rasterizer states
+		readonly RasterizerState defaultRasterizer;
+		readonly RasterizerState wireframeRasterizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:IsoHex.Renderer"/> class.
@@ -45,6 +50,14 @@ namespace IsoHex
             DebugDot = new Texture2D(screen, 1, 1, false, SurfaceFormat.Color);
 			Int32[] pixel = { 0xFFFFFF }; // White. 0xFF is Red, 0xFF0000 is Blue
 			DebugDot.SetData(pixel, 0, 1);
+
+			// Rasterizer states
+			defaultRasterizer = screen.RasterizerState;
+			wireframeRasterizer = new RasterizerState()
+			{
+				FillMode = FillMode.WireFrame,
+				DepthClipEnable = false
+			};
         }
 
         /// <summary>
@@ -55,7 +68,7 @@ namespace IsoHex
         public void SetupCamera(UI ui, Dictionary<Guid, Entity> entities){
 
             // Set camera focus
-            SetFocus(ui.focusedEntity, entities);
+            SetFocus(ui.cursorEntity, entities);
 
             // Set angle and position
             Vector3 cameraPos = new Vector3(
@@ -75,12 +88,12 @@ namespace IsoHex
                 ui.zoomLevel, ui.zoomLevel * aspRatio, nearClip, farClip
             );
 
-            Console.WriteLine(
+            /*Console.WriteLine(
                 "Yaw: " + ui.yaw + "\n" +
                 "Pitch: " + ui.pitch + "\n" +
                 "Obj Pos: " + cameraLookAt.ToString() + "\n" +
                 "Cam Pos: " + cameraPos.ToString() + "\n" 
-            );
+            );*/
         }
 
         /// <summary>
@@ -101,8 +114,90 @@ namespace IsoHex
                 farClip
             );*/
 
-            tris = new List<VertexPositionColor>();
+            tris.Clear();
+            wiretris.Clear();
 		}
+
+        /// <summary>
+        /// Draws the cursor.
+        /// </summary>
+        /// <param name="center">Center.</param>
+        /// <param name="scale">Scale.</param>
+        /// <param name="dir">Direction.</param>
+        /// <param name="team">Team.</param>
+        /// <param name="time">Total game time in seconds.</param>
+        public void DrawCursor(
+            Vector3 center,
+            Vector3 scale,
+            Entity._Position._Direction dir,
+            Entity._Team._Teams team,
+            double time
+        ){
+            // This will be a nightmare.
+            // For now, were drawing one tri pointing towards the given direction.
+
+            VertexPositionColor[] Verts = new VertexPositionColor[3];
+
+            float angleFwd = ((float)Math.PI / 3) * ((int)dir - 1) + ((float)Math.PI / 6);
+            float angleBackL = angleFwd - ((float)Math.PI / 1.45f);
+            float angleBackR = angleFwd + ((float)Math.PI / 1.45f);
+
+			Verts = new VertexPositionColor[6];
+
+			Verts[0].Position = new Vector3(
+				center.X + scale.X * (float)Math.Cos(angleFwd),
+				center.Y + scale.Y * (float)Math.Sin(angleFwd),
+				center.Z + 0.1f
+			);
+			Verts[1].Position = new Vector3(
+                center.X + scale.X * (float)Math.Cos(angleBackL),
+                center.Y + scale.Y * (float)Math.Sin(angleBackL),
+				center.Z + 0.1f
+			);
+			Verts[2].Position = new Vector3(
+				center.X + scale.X * (float)Math.Cos(angleBackR),
+				center.Y + scale.Y * (float)Math.Sin(angleBackR),
+				center.Z + 0.1f
+			);
+
+			Verts[3].Position = new Vector3(
+				center.X + scale.X * 1.75f * (float)Math.Cos(angleFwd),
+				center.Y + scale.Y * 1.75f * (float)Math.Sin(angleFwd),
+                center.Z + 3f + (float)Math.Sin(time)
+			);
+			Verts[4].Position = new Vector3(
+                center.X + (scale.X * 0.8f) * 1.75f * (float)Math.Cos(angleBackL),
+				center.Y + (scale.Y * 0.8f) * 1.75f * (float)Math.Sin(angleBackL),
+				center.Z + 3f + (float)Math.Sin(time)
+			);
+			Verts[5].Position = new Vector3(
+                center.X + (scale.X * 0.8f) * 1.75f * (float)Math.Cos(angleBackR),
+				center.Y + (scale.Y * 0.8f) * 1.75f * (float)Math.Sin(angleBackR),
+				center.Z + 3f + (float)Math.Sin(time)
+			);
+
+            Color teamColor;
+            switch(team){
+                case Entity._Team._Teams.BLUE:
+                    teamColor = Color.Blue;
+                    break;
+                case Entity._Team._Teams.RED:
+                    teamColor = Color.Red;
+                    break;
+                default:
+                    teamColor = Color.Magenta;
+                    break;
+            }
+
+			Verts[0].Color = teamColor;
+			Verts[1].Color = teamColor;
+			Verts[2].Color = teamColor;
+			Verts[3].Color = teamColor;
+			Verts[4].Color = teamColor;
+			Verts[5].Color = teamColor;
+
+            wiretris.AddRange(Verts);
+        }
 
         /// <summary>
         /// Draws a hexagon.
@@ -111,7 +206,9 @@ namespace IsoHex
         /// <param name="scale">Scale.</param>
         /// <param name="topColor">Top color.</param>
         /// <param name="sideColor">Side color.</param>
-        public void DrawHexagon(Vector3 center, Vector3 scale, Color topColor, Color sideColor){
+        public void DrawHexagon(
+            Vector3 center, Vector3 scale, Color topColor, Color sideColor, bool wire
+        ){
 
             VertexPositionColor[] Verts;
 
@@ -119,31 +216,31 @@ namespace IsoHex
             if (Equals(scale.Z, 0)) {
                 Verts = new VertexPositionColor[6 * 3];
 
-                foreach (var i in Enumerable.Range(0, 2))
+                foreach (var i in Enumerable.Range(0, 6))
                 {
                     // Create vertices
                     float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
                     float angleNext = angle + ((float)Math.PI / 3);
 
                     // Surface
-                    Verts[i * 9 + 0].Position = new Vector3(
+                    Verts[i * 3 + 0].Position = new Vector3(
                         center.X + scale.X * (float)Math.Cos(angle),
                         center.Y + scale.Y * (float)Math.Sin(angle),
                         center.Z + scale.Z
                     );
-                    Verts[i * 9 + 1].Position = new Vector3(
+                    Verts[i * 3 + 1].Position = new Vector3(
                         center.X, center.Y, center.Z + scale.Z
                     );
-                    Verts[i * 9 + 2].Position = new Vector3(
+                    Verts[i * 3 + 2].Position = new Vector3(
                         center.X + scale.X * (float)Math.Cos(angleNext),
                         center.Y + scale.Y * (float)Math.Sin(angleNext),
                         center.Z + scale.Z
                     );
 
 					// Top color
-					Verts[i * 9 + 0].Color = topColor;
-					Verts[i * 9 + 1].Color = topColor;
-					Verts[i * 9 + 2].Color = topColor;
+					Verts[i * 3 + 0].Color = topColor;
+					Verts[i * 3 + 1].Color = topColor;
+					Verts[i * 3 + 2].Color = topColor;
                 }
             }
             // 3D hexagon (no bottom)
@@ -220,9 +317,11 @@ namespace IsoHex
 				}
             }
 
-
-
-            tris.AddRange(Verts);
+            if (wire) {
+                wiretris.AddRange(Verts);
+            } else {
+                tris.AddRange(Verts);
+            }
         }
 
         /// <summary>
@@ -259,11 +358,14 @@ namespace IsoHex
 				// Render object depending on model ID
                 switch(obj.Value.Renderable.modelID){
                     case "ground":
-                        DrawHexagon(pos, scale, Color.SpringGreen, Color.SaddleBrown);
+                        DrawHexagon(pos, scale, Color.SpringGreen, Color.SaddleBrown, false);
+                        break;
+                    case "cursor":
+                        DrawCursor(pos, scale, obj.Value.Position.dir, obj.Value.Team.team, gametime.TotalGameTime.TotalSeconds);
                         break;
                     default:
                         //spritebatch.Draw(DebugDot, new Rectangle(centerPos.X, centerPos.Y, 8, 8), Color.Red);
-                        DrawHexagon(pos, scale, Color.Red, Color.DarkRed);
+                        DrawHexagon(pos, scale, Color.Magenta, Color.DarkMagenta, false);
                         break;
                 }
             }
@@ -298,9 +400,20 @@ namespace IsoHex
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                graphics.GraphicsDevice.DrawUserPrimitives(
-                    PrimitiveType.TriangleList, tris.ToArray(), 0, tris.Count() / 3
-                );
+
+                if (tris.Any()) {
+                    screen.RasterizerState = defaultRasterizer;
+                    screen.DrawUserPrimitives(
+                        PrimitiveType.TriangleList, tris.ToArray(), 0, tris.Count() / 3
+                    );
+                }
+
+                if (wiretris.Any()) {
+                    screen.RasterizerState = wireframeRasterizer;
+                    screen.DrawUserPrimitives(
+                        PrimitiveType.TriangleList, wiretris.ToArray(), 0, wiretris.Count() / 3
+                    );
+                }
             }
 
             // UI

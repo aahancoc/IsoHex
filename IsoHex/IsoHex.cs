@@ -46,15 +46,22 @@ namespace IsoHex
                 entities.Add(Guid.NewGuid(), x);
             }
 
-            // Create a swordsman
-            ui.focusedEntity = Guid.NewGuid();
-
+            // Create a cursor
+            ui.cursorEntity = Guid.NewGuid();
             entities.Add(
-                ui.focusedEntity,
-                EntityFactory.SwordsmanFactory(
+                ui.cursorEntity,
+                EntityFactory.CursorFactory(
                     0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
                 )
             );
+
+            // Create a swordsman
+			entities.Add(
+                Guid.NewGuid(),
+				EntityFactory.SwordsmanFactory(
+					0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
+				)
+			);
 
 		}
 
