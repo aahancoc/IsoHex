@@ -62,7 +62,7 @@ namespace IsoHex
             cursorEntity.Parasite = new Entity._Parasite()
             {
                 hostID = swordsmanID,
-                moveType = Entity._Parasite._MoveType.MOVEHOST
+                moveType = Entity._Parasite._MoveType.RELATIVE
             };
 
             // Add entities to list

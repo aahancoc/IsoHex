@@ -45,11 +45,12 @@ namespace IsoHex
 		/// <param name="_pos">Position Component (required).</param>
 		/// <param name="_render">Render Component.</param>
 		/// <param name="_parasite">Parasite Component.</param>
-        static KeyValuePair<Guid, Entity>? MoveEntity(
+        static Dictionary<Guid, Entity> MoveEntity(
 			ref Entity._Mobile? _mobile,
 			ref Entity._Position? _pos,
 			ref Entity._Renderable? _render,
             ref Entity._Parasite? _parasite,
+            Guid currID,
             Dictionary<Guid, Entity> entities
 		) {
 
@@ -68,7 +69,7 @@ namespace IsoHex
 				return null;
 			}
 
-            Console.WriteLine("moving...");
+            //Console.WriteLine("moving...");
 
 			// Get our target position in a more usable form
 			Entity._Position mobileTgt = mobile.stepArray.Peek();
@@ -78,7 +79,10 @@ namespace IsoHex
 				mobileTgt.Z
 			);
 
-			// Update actual position
+            // Update actual position
+            int dX = pos.X - mobileTgt.X;
+            int dY = pos.Y - mobileTgt.Y;
+            int dZ = pos.Z - mobileTgt.Z;
 			pos.X = mobileTgt.X;
 			pos.Y = mobileTgt.Y;
 			pos.Z = mobileTgt.Z;
@@ -106,32 +110,58 @@ namespace IsoHex
 			_mobile = mobile;
 
             // Update host position if applicable
-            if(
+            Dictionary<Guid, Entity> retval = new Dictionary<Guid, Entity>();
+            /*if (
                 _parasite.HasValue &&
                 _parasite.Value.moveType == Entity._Parasite._MoveType.MOVEHOST
-            ){
+            ) {
                 Entity host = entities[_parasite.Value.hostID];
-                if (!host.Position.HasValue) { return null;  }
-                var hostpos = host.Position.Value;
+                if (host.Position.HasValue) {
+                    var hostpos = host.Position.Value;
 
-				hostpos.X = mobileTgt.X;
-				hostpos.Y = mobileTgt.Y;
-				hostpos.Z = mobileTgt.Z;
+                    hostpos.X += dX;
+                    hostpos.Y += dY;
+                    hostpos.Z += dZ;
 
-                host.Position = hostpos;
+                    host.Position = hostpos;
 
-                if (host.Renderable.HasValue) {
-                    var render = host.Renderable.Value;
-                    render.target = mobileTgtPos;
-                    host.Renderable = render;
+                    if (host.Renderable.HasValue) {
+                        var render = host.Renderable.Value;
+                        render.target = mobileTgtPos;
+                        host.Renderable = render;
+                    }
+
+                    retval.Add(_parasite.Value.hostID, host);
                 }
-
-                return new KeyValuePair<Guid, Entity>(_parasite.Value.hostID, host);
-            }
+            }*/
 
             // Update things attached TO this entity if applicable
+            foreach(var _ent in entities){
+                if(
+                    _ent.Value.Parasite.HasValue &&
+                    _ent.Value.Position.HasValue &&
+                    _ent.Value.Parasite.Value.hostID == currID
+                ){
+                    var ent = _ent.Value;
+                    var entPos = _ent.Value.Position.Value;
 
-            return null;
+                    entPos.X += dX;
+					entPos.Y += dY;
+					entPos.Z += dZ;
+                    ent.Position = entPos;
+
+					if (ent.Renderable.HasValue)
+					{
+						var render = ent.Renderable.Value;
+						render.target = mobileTgtPos;
+						ent.Renderable = render;
+					}
+
+                    retval.Add(_ent.Key, ent);
+                }
+            }
+
+            return retval;
 		}
 
         /// <summary>
@@ -213,10 +243,14 @@ namespace IsoHex
                 ref entity.Position,
 				ref entity.Renderable,
                 ref entity.Parasite,
+                _entity.Key,
                 list
             );
-            if(tmp.HasValue){
-                retval.Add(tmp.Value.Key, tmp.Value.Value);
+            if (tmp != null) {
+                foreach (var x in tmp)
+                {
+                    retval.Add(x.Key, x.Value);
+                }
             }
 
 			// Update visible position if not at target
@@ -236,10 +270,26 @@ namespace IsoHex
 
             // Entities
             foreach(var obj in list){
+
+                // If we've updated it already, use updated version
+                KeyValuePair<Guid, Entity> currEntity = obj;
+                if(updated.ContainsKey(obj.Key)){
+                    currEntity = new KeyValuePair<Guid, Entity>(
+                        obj.Key, updated[obj.Key]
+                    );
+                }
+
+                // Main processing call
                 Dictionary<Guid, Entity> newentities = 
                     UpdateEntity(obj, list, gametime);
-                foreach(var x in newentities){
-                    updated.Add(x.Key, x.Value);
+                
+                // Add resulting entities to updated list
+                foreach(var ent in newentities){
+					if (updated.ContainsKey(ent.Key)) {
+						updated[ent.Key] = ent.Value;
+					} else {
+						updated.Add(ent.Key, ent.Value);
+					}
                 }
             }
 

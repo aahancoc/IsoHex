@@ -88,7 +88,7 @@ namespace IsoHex
                     pos = new Vector3(x, y, z),
                     target = new Vector3(x, y, z),
                     scale = new Vector3(0.75f, 0.75f, 1f),
-                    velocity = 2.0f,
+                    velocity = 5.0f,
                     modelID = "cursor"
                 },
 
@@ -123,7 +123,7 @@ namespace IsoHex
                     name = "Swordsman",
                     pos = new Vector3(x, y, z),
                     target = new Vector3(x, y, z),
-                    velocity = 1f,
+                    velocity = 5.0f,
                     scale = new Vector3(0.5f, 0.5f, 0.8f),
                     modelID = "swordsman",
                     alwaysVisible = true
