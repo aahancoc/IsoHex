@@ -102,8 +102,8 @@ namespace IsoHex
         public struct _Parasite
         {
             public Guid parentID;
-            public _MoveType MoveType;
-            public _DropType DropType;
+            public _MoveType moveType;
+            public _DropType dropType;
 
             public enum _MoveType { 
                 RELATIVE, // when moved, stay some position relative to host
@@ -219,7 +219,7 @@ namespace IsoHex
             public int PPCostPerTile; // cost to keep moving
             public int steepness; // max allowed tile height variance
             public bool moving; // true if currently moving (to first value in stepArray)
-            public Stack<_Position> stepArray; // array of places to move to
+            public Queue<_Position> stepArray; // array of places to move to
         }
 
         // ATK/DEF boosts. Should get consumed immediately after attachement.
@@ -242,5 +242,16 @@ namespace IsoHex
             public int startInc; // Starting cost increase
             public int stepInc; // Cost/tile increase
         }
+
+        // Operator overloads
+		public static bool operator ==(Entity c1, Entity c2)
+		{
+			return c1.Equals(c2);
+		}
+
+		public static bool operator !=(Entity c1, Entity c2)
+		{
+			return !c1.Equals(c2);
+		}
     }
 }

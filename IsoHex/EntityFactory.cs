@@ -118,14 +118,17 @@ namespace IsoHex
             chara.Renderable.name = "Swordsman";
             chara.Renderable.pos = new Vector3(x, y, z);
             chara.Renderable.target = chara.Renderable.pos;
+            chara.Renderable.velocity = 1f;
             chara.Renderable.scale = new Vector3(0.5f, 0.5f, 0.8f);
             chara.Renderable.modelID = "swordsman";
+            chara.Renderable.alwaysVisible = true;
 
             chara.Team.team = Entity._Team._Teams.RED;
 
             chara.Mobile.PPCost = 3;
             chara.Mobile.PPCostPerTile = 1;
-
+            chara.Mobile.stepArray = new Queue<Entity._Position>();
+                
             chara.Intelligent.PP = 50;
             chara.Intelligent.maxPP = 50;
 

@@ -16,6 +16,7 @@ namespace IsoHex
 
         // Camera
 		Vector3 cameraLookAt = Vector3.Zero;
+        Vector3 cameraPos = Vector3.Zero;
         float aspRatio;
         const float nearClip = 0.1f;
         const float farClip = 2000f;
@@ -60,6 +61,44 @@ namespace IsoHex
 			};
         }
 
+		// Taken from https://blogs.msdn.microsoft.com/rezanour/2011/08/07/barycentric-coordinates-and-point-in-triangle-tests/
+		///<summary>
+		/// Determine whether a point P is inside the triangle ABC. Note, this function
+		/// assumes that P is coplanar with the triangle.
+		///</summary>
+		///<returns>True if the point is inside, false if it is not.</returns>
+		public static bool PointInTriangle(ref Vector3 A, ref Vector3 B, ref Vector3 C, ref Vector3 P)
+		{
+
+			// Prepare our barycentric variables
+			Vector3 u = B - A;
+			Vector3 v = C - A;
+			Vector3 w = P - A;
+
+			Vector3 vCrossW = Vector3.Cross(v, w);
+			Vector3 vCrossU = Vector3.Cross(v, u);
+
+			// Test sign of r
+			if (Vector3.Dot(vCrossW, vCrossU) < 0)
+				return false;
+            
+			Vector3 uCrossW = Vector3.Cross(u, w);
+			Vector3 uCrossV = Vector3.Cross(u, v);
+
+            // Test sign of t
+            if (Vector3.Dot(uCrossW, uCrossV) < 0) {
+                return false;
+            }
+            
+			// At this point, we know that r and t and both > 0.
+			// Therefore, as long as their sum is <= 1, each must be less <= 1
+			float denom = uCrossV.Length();
+			float r = vCrossW.Length() / denom;
+			float t = uCrossW.Length() / denom;
+
+			return (r + t <= 1);
+		}
+
         /// <summary>
         /// Set up the camera.
         /// </summary>
@@ -68,10 +107,10 @@ namespace IsoHex
         public void SetupCamera(UI ui, Dictionary<Guid, Entity> entities){
 
             // Set camera focus
-            SetFocus(ui.cursorEntity, entities);
+            SetFocus(ui.cursorID, entities);
 
             // Set angle and position
-            Vector3 cameraPos = new Vector3(
+            cameraPos = new Vector3(
                 (float)Math.Cos(ui.yaw) * (float)Math.Cos(ui.pitch),
                 (float)Math.Sin(ui.yaw) * (float)Math.Cos(ui.pitch),
                 (float)Math.Sin(ui.pitch)
@@ -87,13 +126,6 @@ namespace IsoHex
 			effect.Projection = Matrix.CreateOrthographic(
                 ui.zoomLevel, ui.zoomLevel * aspRatio, nearClip, farClip
             );
-
-            /*Console.WriteLine(
-                "Yaw: " + ui.yaw + "\n" +
-                "Pitch: " + ui.pitch + "\n" +
-                "Obj Pos: " + cameraLookAt.ToString() + "\n" +
-                "Cam Pos: " + cameraPos.ToString() + "\n" 
-            );*/
         }
 
         /// <summary>
@@ -107,13 +139,6 @@ namespace IsoHex
                 graphics.PreferredBackBufferHeight
             );
 
-            /*effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,
-                aspRatio,
-                nearClip,
-                farClip
-            );*/
-
             tris.Clear();
             wiretris.Clear();
 		}
@@ -126,7 +151,7 @@ namespace IsoHex
         /// <param name="dir">Direction.</param>
         /// <param name="team">Team.</param>
         /// <param name="time">Total game time in seconds.</param>
-        public void DrawCursor(
+        public VertexPositionColor[] DrawCursor(
             Vector3 center,
             Vector3 scale,
             Entity._Position._Direction dir,
@@ -196,7 +221,7 @@ namespace IsoHex
 			Verts[4].Color = teamColor;
 			Verts[5].Color = teamColor;
 
-            wiretris.AddRange(Verts);
+            return Verts;
         }
 
         /// <summary>
@@ -206,122 +231,103 @@ namespace IsoHex
         /// <param name="scale">Scale.</param>
         /// <param name="topColor">Top color.</param>
         /// <param name="sideColor">Side color.</param>
-        public void DrawHexagon(
-            Vector3 center, Vector3 scale, Color topColor, Color sideColor, bool wire
+        public VertexPositionColor[] DrawHexagon(
+            Vector3 center, Vector3 scale, Color topColor, Color sideColor
         ){
 
             VertexPositionColor[] Verts;
+            int tricount;
+            int vtxPerSide;
 
             // Flat hexagon
             if (Equals(scale.Z, 0)) {
-                Verts = new VertexPositionColor[6 * 3];
-
-                foreach (var i in Enumerable.Range(0, 6))
-                {
-                    // Create vertices
-                    float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
-                    float angleNext = angle + ((float)Math.PI / 3);
-
-                    // Surface
-                    Verts[i * 3 + 0].Position = new Vector3(
-                        center.X + scale.X * (float)Math.Cos(angle),
-                        center.Y + scale.Y * (float)Math.Sin(angle),
-                        center.Z + scale.Z
-                    );
-                    Verts[i * 3 + 1].Position = new Vector3(
-                        center.X, center.Y, center.Z + scale.Z
-                    );
-                    Verts[i * 3 + 2].Position = new Vector3(
-                        center.X + scale.X * (float)Math.Cos(angleNext),
-                        center.Y + scale.Y * (float)Math.Sin(angleNext),
-                        center.Z + scale.Z
-                    );
-
-					// Top color
-					Verts[i * 3 + 0].Color = topColor;
-					Verts[i * 3 + 1].Color = topColor;
-					Verts[i * 3 + 2].Color = topColor;
-                }
+                tricount = 6;
+                vtxPerSide = 3;
+            } else {
+                tricount = 18;
+                vtxPerSide = 9;
             }
-            // 3D hexagon (no bottom)
-            else {
-                Verts = new VertexPositionColor[6 * 3 * 3];
 
-				foreach (var i in Enumerable.Range(0, 6))
-				{
-					// Create vertices
+            Verts = new VertexPositionColor[3 * tricount];
+
+            // Surface vertices
+            foreach (var i in Enumerable.Range(0, 6)) {
+				float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
+				float angleNext = angle + ((float)Math.PI / 3);
+
+                Verts[i * vtxPerSide + 0].Position = new Vector3(
+                    center.X + scale.X * (float)Math.Cos(angle),
+                    center.Y + scale.Y * (float)Math.Sin(angle),
+                    center.Z + scale.Z
+                );
+                Verts[i * vtxPerSide + 1].Position = new Vector3(
+                    center.X, center.Y, center.Z + scale.Z
+                );
+                Verts[i * vtxPerSide + 2].Position = new Vector3(
+                    center.X + scale.X * (float)Math.Cos(angleNext),
+                    center.Y + scale.Y * (float)Math.Sin(angleNext),
+                    center.Z + scale.Z
+                );
+
+				// Top color
+				Verts[i * vtxPerSide + 0].Color = topColor;
+				Verts[i * vtxPerSide + 1].Color = topColor;
+				Verts[i * vtxPerSide + 2].Color = topColor;
+            }
+
+            // 3D hexagon (no bottom)
+            if (tricount > 6) {
+				foreach (var i in Enumerable.Range(0, 6)) {
 					float angle = ((float)Math.PI / 3) * i + ((float)Math.PI / 6);
 					float angleNext = angle + ((float)Math.PI / 3);
 
-					// Surface
-					Verts[i * 9 + 0].Position = new Vector3(
-						center.X + scale.X * (float)Math.Cos(angle),
-						center.Y + scale.Y * (float)Math.Sin(angle),
-						center.Z + scale.Z
-					);
-					Verts[i * 9 + 1].Position = new Vector3(
-						center.X, center.Y, center.Z + scale.Z
-					);
-					Verts[i * 9 + 2].Position = new Vector3(
-						center.X + scale.X * (float)Math.Cos(angleNext),
-						center.Y + scale.Y * (float)Math.Sin(angleNext),
-						center.Z + scale.Z
-					);
-
 					// Sides (1)
-					Verts[i * 9 + 3].Position = new Vector3(
+					Verts[i * vtxPerSide + 3].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angle),
 						center.Y + scale.Y * (float)Math.Sin(angle),
 						center.Z + scale.Z
 					);
-					Verts[i * 9 + 4].Position = new Vector3(
+					Verts[i * vtxPerSide + 4].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angleNext),
 						center.Y + scale.Y * (float)Math.Sin(angleNext),
 						center.Z + scale.Z
 					);
-					Verts[i * 9 + 5].Position = new Vector3(
+					Verts[i * vtxPerSide + 5].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angle),
 						center.Y + scale.Y * (float)Math.Sin(angle),
 						center.Z
 					);
 
 					// Sides (2)
-					Verts[i * 9 + 8].Position = new Vector3(
+					Verts[i * vtxPerSide + 8].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angle),
 						center.Y + scale.Y * (float)Math.Sin(angle),
 						center.Z
 					);
-					Verts[i * 9 + 7].Position = new Vector3(
+					Verts[i * vtxPerSide + 7].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angleNext),
 						center.Y + scale.Y * (float)Math.Sin(angleNext),
 						center.Z
 					);
-					Verts[i * 9 + 6].Position = new Vector3(
+					Verts[i * vtxPerSide + 6].Position = new Vector3(
 						center.X + scale.X * (float)Math.Cos(angleNext),
 						center.Y + scale.Y * (float)Math.Sin(angleNext),
 						center.Z + scale.Z
 					);
 
-					// Top color
-					Verts[i * 9 + 0].Color = topColor;
-					Verts[i * 9 + 1].Color = topColor;
-					Verts[i * 9 + 2].Color = topColor;
-
 					// Side colors
-					Verts[i * 9 + 3].Color = sideColor;
-					Verts[i * 9 + 4].Color = sideColor;
-					Verts[i * 9 + 5].Color = sideColor;
-					Verts[i * 9 + 6].Color = sideColor;
-					Verts[i * 9 + 7].Color = sideColor;
-					Verts[i * 9 + 8].Color = sideColor;
+					Verts[i * vtxPerSide + 3].Color = sideColor;
+					Verts[i * vtxPerSide + 4].Color = sideColor;
+					Verts[i * vtxPerSide + 5].Color = sideColor;
+
+					Verts[i * vtxPerSide + 6].Color = sideColor;
+					Verts[i * vtxPerSide + 7].Color = sideColor;
+					Verts[i * vtxPerSide + 8].Color = sideColor;
 				}
             }
 
-            if (wire) {
-                wiretris.AddRange(Verts);
-            } else {
-                tris.AddRange(Verts);
-            }
+            // Add to render list
+            return Verts;
         }
 
         /// <summary>
@@ -347,28 +353,138 @@ namespace IsoHex
         public void DrawEntities(Dictionary<Guid, Entity> list, GameTime gametime){
             
             // Get every renderable thing
-            foreach (var obj in list.Where(x => x.Value.Active.HasFlag(Entity._Components.RENDERABLE))){
+            foreach (var obj in list.Where(
+                x => x.Value.Active.HasFlag(Entity._Components.RENDERABLE)
+            )){
                 
                 // Convert coordinates
                 Vector3 pos = CoordUtils.GetWorldPosition(obj.Value.Renderable.pos);
                 Vector3 scale = CoordUtils.GetWorldScale(obj.Value.Renderable.scale);
 
-                // Get sprite width/height & offset by 1/2 that
+                // Render object depending on model ID
+                VertexPositionColor[] Verts;
+				bool isWireframe = false;
 
-				// Render object depending on model ID
                 switch(obj.Value.Renderable.modelID){
                     case "ground":
-                        DrawHexagon(pos, scale, Color.SpringGreen, Color.SaddleBrown, false);
+                        Verts = DrawHexagon(
+                            pos,
+                            scale,
+                            Color.SpringGreen,
+                            Color.SaddleBrown
+                        );
                         break;
                     case "cursor":
-                        DrawCursor(pos, scale, obj.Value.Position.dir, obj.Value.Team.team, gametime.TotalGameTime.TotalSeconds);
+                        isWireframe = true; // always wireframe
+                        Verts = DrawCursor(
+                            pos, 
+                            scale, 
+                            obj.Value.Position.dir,
+                            obj.Value.Team.team, 
+                            gametime.TotalGameTime.TotalSeconds
+                        );
                         break;
                     default:
-                        //spritebatch.Draw(DebugDot, new Rectangle(centerPos.X, centerPos.Y, 8, 8), Color.Red);
-                        DrawHexagon(pos, scale, Color.Magenta, Color.DarkMagenta, false);
+                        Verts = DrawHexagon(
+                            pos,
+                            scale,
+                            Color.Magenta, 
+                            Color.DarkMagenta
+                        );
                         break;
                 }
-            }
+
+                // If we know its wireframe, just draw it
+                if(isWireframe){
+                    wiretris.AddRange(Verts);
+                    continue;
+                }
+
+                // Otherwise check for clipping collisions with must-be-drawn objects
+                foreach(var mbd in list.Where(
+                    x => x.Key != obj.Key &&
+                    x.Value.Active.HasFlag(Entity._Components.RENDERABLE) &&
+                    x.Value.Renderable.alwaysVisible
+                )){
+					// Get center of object and direction from object to camera
+					Vector3 mbdCenter = CoordUtils.GetWorldPosition(mbd.Value.Renderable.pos);
+					Vector3 mbdScale = CoordUtils.GetWorldScale(mbd.Value.Renderable.scale);
+                    mbdCenter.Z += 0.5f * mbdScale.Z;
+
+					Vector3 dir = Vector3.Normalize(cameraPos - mbdCenter);
+
+                    // Make ray from left side to camera
+                    Vector3 mbdLeft = mbdCenter;
+                    mbdLeft.X -= 1.5f * mbdScale.X * (float)Math.Cos(dir.X);
+                    mbdLeft.Y -= 1.5f * mbdScale.Y * (float)Math.Sin(dir.Y);
+
+                    // And the left side
+					Vector3 mbdRight = mbdCenter;
+					mbdRight.X += 1.5f * mbdScale.X * (float)Math.Cos(dir.X);
+					mbdRight.Y += 1.5f * mbdScale.Y * (float)Math.Sin(dir.Y);
+
+                    // Make the directions the opposite for maximum range
+					Ray rayL = new Ray(mbdLeft, cameraPos - mbdRight);
+                    Ray rayR = new Ray(mbdRight, cameraPos - mbdLeft);
+
+                    //Console.WriteLine("RayL: " + rayL);// + "\nRayR: " + rayR);
+
+                    // Run through every triangle we're about to render
+                    foreach(var i in Enumerable.Range(0, Verts.Count() / 3)){
+                        // Generate plane from triangle points
+                        Plane currTri = new Plane(
+                            Verts[i * 3 + 0].Position,
+                            Verts[i * 3 + 1].Position,
+                            Verts[i * 3 + 2].Position
+                        );
+
+                        // Determine if and where ray intersects plane
+                        float? distL = rayL.Intersects(currTri);
+                        float? distR = rayR.Intersects(currTri);
+
+                        //Console.WriteLine("DistL: " + distL + "\nDistR: " + distR + "\n");
+
+                        // Determine if left intersection point is within triangle
+                        if (distL.HasValue) {
+                            Vector3 isectL = rayL.Position + distL.Value * rayL.Direction;
+                            if (PointInTriangle(
+                                ref Verts[i * 3 + 0].Position,
+                                ref Verts[i * 3 + 1].Position,
+                                ref Verts[i * 3 + 2].Position,
+                                ref isectL
+                            ))
+                            {
+                                isWireframe = true;
+                                break;
+                            }
+                        }
+
+						// Determine if right intersection point is within triangle
+						if (distR.HasValue) {
+							Vector3 isectR = rayR.Position + distR.Value * rayR.Direction;
+                            if (PointInTriangle(
+                                ref Verts[i * 3 + 0].Position,
+                                ref Verts[i * 3 + 1].Position,
+                                ref Verts[i * 3 + 2].Position,
+                                ref isectR
+                            ))
+                            {
+                                isWireframe = true;
+                                break;
+                            }
+						}
+
+                        // Nope, it's clear. Next triangle.
+                    }
+                }
+
+				// Add vertices to correct list
+				if (isWireframe) {
+					wiretris.AddRange(Verts);
+                } else {
+                    tris.AddRange(Verts);
+                }
+			}
         }
 
         /// <summary>

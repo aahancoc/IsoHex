@@ -9,7 +9,7 @@ namespace IsoHex
     public class UI
     {
         // Camera stuff
-        public Guid cursorEntity;
+        public Guid cursorID;
         public float zoomLevel = 50.0f;
         public float pitch = (float)Math.Asin(1 / Math.Sqrt((2)));
         public float yaw = MathHelper.PiOver2;

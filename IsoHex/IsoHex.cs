@@ -17,7 +17,7 @@ namespace IsoHex
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
         Renderer renderer;
-        readonly Dictionary<Guid, Entity> entities;
+        Dictionary<Guid, Entity> entities;
         readonly UI ui;
 
         public IsoHex()
@@ -26,7 +26,7 @@ namespace IsoHex
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
-            entities = new Dictionary<Guid, Entity>();
+            entities = new Dictionary<Guid, Entity>(256);
 			ui = new UI();
 		}
 
@@ -47,27 +47,31 @@ namespace IsoHex
             }
 
             // Create a cursor
-            ui.cursorEntity = Guid.NewGuid();
-            entities.Add(
-                ui.cursorEntity,
-                EntityFactory.CursorFactory(
-                    0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
-                )
+            ui.cursorID = Guid.NewGuid();
+            Entity cursorEntity = EntityFactory.CursorFactory(
+                0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
             );
 
             // Create a swordsman
-			entities.Add(
-                Guid.NewGuid(),
-				EntityFactory.SwordsmanFactory(
-					0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
-				)
-			);
+            Guid swordsmanID = Guid.NewGuid();
+            Entity swordsmanEntity = EntityFactory.SwordsmanFactory(
+                0, 0, TerrainUtils.GetHeightFromTile(0, 0, entities)
+            );
 
+            // Attach swordsman to cursor
+            cursorEntity.Active |= Entity._Components.PARASITE;
+            cursorEntity.Parasite.parentID = swordsmanID;
+            cursorEntity.Parasite.moveType = Entity._Parasite._MoveType.MOVEHOST;
+
+            // Add entities to list
+            entities.Add(ui.cursorID, cursorEntity);
+            entities.Add(swordsmanID, swordsmanEntity);
 		}
 
 		protected override void Update (GameTime gameTime)
 		{
 			base.Update (gameTime);
+            Updater.UpdateAll(ref entities, gameTime);
 		}
 
 		protected override void Draw (GameTime gameTime)
