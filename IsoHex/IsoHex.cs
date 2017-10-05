@@ -59,14 +59,16 @@ namespace IsoHex
             );
 
             // Attach swordsman to cursor
-            cursorEntity.Active |= Entity._Components.PARASITE;
-            cursorEntity.Parasite.parentID = swordsmanID;
-            cursorEntity.Parasite.moveType = Entity._Parasite._MoveType.MOVEHOST;
+            cursorEntity.Parasite = new Entity._Parasite()
+            {
+                hostID = swordsmanID,
+                moveType = Entity._Parasite._MoveType.MOVEHOST
+            };
 
             // Add entities to list
             entities.Add(ui.cursorID, cursorEntity);
             entities.Add(swordsmanID, swordsmanEntity);
-		}
+        }
 
 		protected override void Update (GameTime gameTime)
 		{

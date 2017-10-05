@@ -17,27 +17,30 @@ namespace IsoHex
         /// <param name="height">Height.</param>
         static public Entity GroundFactory(int x, int y, int height)
         {
-            Entity ground = new Entity();
+            return new Entity()
+            {
+                Position = new Entity._Position()
+                {
+                    X = x,
+                    Y = y,
+                    Z = 0,
+                    height = height
+                },
 
-            ground.Active =
-                Entity._Components.POSITION |
-                Entity._Components.RENDERABLE |
-                Entity._Components.SOLID;
-            
-            ground.Position.X = x;
-            ground.Position.Y = y;
-            ground.Position.Z = 0;
-            ground.Position.height = height;
+                Renderable = new Entity._Renderable()
+                {
+                    pos = new Vector3(x, y, 0),
+                    target = new Vector3(x, y, 0),
+                    scale = new Vector3(1, 1, height),
+                    modelID = "ground",
+                    animation = "default"
+                },
 
-            ground.Renderable.pos = new Vector3(x, y, 0);
-            ground.Renderable.scale = new Vector3(1, 1, height);
-            ground.Renderable.target = ground.Renderable.pos;
-            ground.Renderable.modelID = "ground";
-            ground.Renderable.animation = "default";
-
-            ground.Solid.walkable = true;
-
-            return ground;
+                Solid = new Entity._Solid()
+                {
+                    walkable = true
+                }
+            };
         }
 
         /// <summary>
@@ -70,26 +73,30 @@ namespace IsoHex
         /// <param name="z">The z coordinate.</param>
         static public Entity CursorFactory(int x, int y, int z)
         {
-			Entity cursor = new Entity();
+            return new Entity()
+            {
+                Position = new Entity._Position()
+                {
+                    X = x,
+                    Y = y,
+                    Z = z,
+                    dir = Entity._Position._Direction.RIGHT
+                },
 
-            cursor.Active =
-                     Entity._Components.POSITION |
-                     Entity._Components.RENDERABLE |
-                     Entity._Components.TEAM;
+                Renderable = new Entity._Renderable()
+                {
+                    pos = new Vector3(x, y, z),
+                    target = new Vector3(x, y, z),
+                    scale = new Vector3(0.75f, 0.75f, 1f),
+                    velocity = 2.0f,
+                    modelID = "cursor"
+                },
 
-            cursor.Position.X = x;
-			cursor.Position.Y = y;
-			cursor.Position.Z = z;
-			cursor.Position.dir = Entity._Position._Direction.RIGHT;
-
-			cursor.Renderable.pos = new Vector3(x, y, z);
-			cursor.Renderable.target = cursor.Renderable.pos;
-			cursor.Renderable.scale = new Vector3(0.75f, 0.75f, 1f);
-			cursor.Renderable.modelID = "cursor";
-
-			cursor.Team.team = Entity._Team._Teams.RED;
-
-            return cursor;
+                Team = new Entity._Team()
+                {
+                    team = Entity._Team._Teams.RED
+                }
+            };
         }
 
         /// <summary>
@@ -101,38 +108,45 @@ namespace IsoHex
         /// <param name="z">The z coordinate.</param>
         static public Entity SwordsmanFactory(int x, int y, int z)
         {
-            Entity chara = new Entity();
+            return new Entity()
+            {
+                Position = new Entity._Position()
+                {
+                    X = x,
+                    Y = y,
+                    Z = z,
+                    dir = Entity._Position._Direction.RIGHT
+                },
 
-            chara.Active =
-                     Entity._Components.POSITION |
-                     Entity._Components.RENDERABLE |
-                     Entity._Components.TEAM |
-                     Entity._Components.MOBILE |
-                     Entity._Components.INTELLIGENT;
+                Renderable = new Entity._Renderable()
+                {
+                    name = "Swordsman",
+                    pos = new Vector3(x, y, z),
+                    target = new Vector3(x, y, z),
+                    velocity = 1f,
+                    scale = new Vector3(0.5f, 0.5f, 0.8f),
+                    modelID = "swordsman",
+                    alwaysVisible = true
+                },
 
-            chara.Position.X = x;
-            chara.Position.Y = y;
-            chara.Position.Z = z;
-            chara.Position.dir = Entity._Position._Direction.RIGHT;
+                Team = new Entity._Team()
+                {
+                    team = Entity._Team._Teams.RED
+                },
 
-            chara.Renderable.name = "Swordsman";
-            chara.Renderable.pos = new Vector3(x, y, z);
-            chara.Renderable.target = chara.Renderable.pos;
-            chara.Renderable.velocity = 1f;
-            chara.Renderable.scale = new Vector3(0.5f, 0.5f, 0.8f);
-            chara.Renderable.modelID = "swordsman";
-            chara.Renderable.alwaysVisible = true;
+                Mobile = new Entity._Mobile()
+                {
+                    PPCost = 3,
+                    PPCostPerTile = 1,
+                    stepArray = new Queue<Entity._Position>()
+                },
 
-            chara.Team.team = Entity._Team._Teams.RED;
-
-            chara.Mobile.PPCost = 3;
-            chara.Mobile.PPCostPerTile = 1;
-            chara.Mobile.stepArray = new Queue<Entity._Position>();
-                
-            chara.Intelligent.PP = 50;
-            chara.Intelligent.maxPP = 50;
-
-            return chara;
+                Intelligent = new Entity._Intelligent()
+                {
+                    PP = 50,
+                    maxPP = 50
+                }
+            };
         }
     }
 }

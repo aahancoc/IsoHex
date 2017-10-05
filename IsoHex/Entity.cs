@@ -7,25 +7,24 @@ namespace IsoHex
     // Currently one Entity is about 300 bytes. If that matters...
     public struct Entity
     {
-        public _Components Active;
         public _Components NeedsExec;
-        public _Position Position;
-        public _Renderable Renderable;
-        public _Team Team;
-        public _Parasite Parasite;
-        public _Solid Solid;
-        public _DeathFX DeathFX;
-        public _Timers Timers;
-        public _Attacker Attacker;
-        public _Defender Defender;
-        public _Intelligent Intelligent;
-        public _Spreadable Spreadable;
-        public _Spawner Spawner;
-        public _Upgradable Upgradable;
-        public _Mobile Mobile;
-        public _StatFX StatFX;
-        public _HealFX HealFX;
-        public _MobilityFX MobilityFX;
+        public _Position? Position;
+        public _Renderable? Renderable;
+        public _Team? Team;
+        public _Parasite? Parasite;
+        public _Solid? Solid;
+        public _DeathFX? DeathFX;
+        public _Timers? Timers;
+        public _Attacker? Attacker;
+        public _Defender? Defender;
+        public _Intelligent? Intelligent;
+        public _Spreadable? Spreadable;
+        public _Spawner? Spawner;
+        public _Upgradable? Upgradable;
+        public _Mobile? Mobile;
+        public _StatFX? StatFX;
+        public _HealFX? HealFX;
+        public _MobilityFX? MobilityFX;
 
         public delegate void SelfDelegate(Entity x);
 
@@ -77,7 +76,6 @@ namespace IsoHex
             public Vector3 pos; // tiles
             public Vector3 scale; // tiles
             public Vector3 target; // tiles, place object is going to
-            //public Vector3 velocity; // tiles/second
             public float velocity; // tiles/second
             public bool alwaysVisible; // if true, render any blocking 
                                        // objects as wireframe
@@ -101,7 +99,7 @@ namespace IsoHex
         // Will update position to match that of a host entity
         public struct _Parasite
         {
-            public Guid parentID;
+            public Guid hostID;
             public _MoveType moveType;
             public _DropType dropType;
 

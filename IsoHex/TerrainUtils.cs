@@ -15,9 +15,9 @@ namespace IsoHex
 		static public IEnumerable<KeyValuePair<Guid,Entity>> FilterTerrain(Dictionary<Guid, Entity> list){
 			var query =
 				from e in list
-				where e.Value.Active.HasFlag(Entity._Components.POSITION) &&
-					  e.Value.Active.HasFlag(Entity._Components.SOLID) &&
-                      e.Value.Solid.walkable
+                where e.Value.Position.HasValue &&
+					  e.Value.Solid.HasValue &&
+                      e.Value.Solid.Value.walkable
 				select e;
 
             return query;
@@ -33,13 +33,13 @@ namespace IsoHex
         static public int GetHeightFromTile(int x, int y, Dictionary<Guid, Entity> list){
             var query =
                 from e in list
-                where e.Value.Active.HasFlag(Entity._Components.POSITION) &&
-					  e.Value.Active.HasFlag(Entity._Components.SOLID) &&
-					  e.Value.Solid.walkable &&
-                      e.Value.Position.X == x &&
-                      e.Value.Position.Y == y
-                orderby (e.Value.Position.Z + e.Value.Position.height) descending
-            	select (e.Value.Position.Z + e.Value.Position.height);
+                where e.Value.Position.HasValue &&
+					  e.Value.Solid.HasValue &&
+					  e.Value.Solid.Value.walkable &&
+                      e.Value.Position.Value.X == x &&
+                      e.Value.Position.Value.Y == y
+                orderby (e.Value.Position.Value.Z + e.Value.Position.Value.height) descending
+            	select (e.Value.Position.Value.Z + e.Value.Position.Value.height);
 
             foreach (int z in query){return z;}
             return -1;
@@ -55,7 +55,7 @@ namespace IsoHex
             // Just find the nearest tile and get the height of that!
             Guid nearID = GetNearestTile(pos, list);
             Entity nearTile = list[nearID];
-            return nearTile.Position.Z + nearTile.Position.height;
+            return nearTile.Position.Value.Z + nearTile.Position.Value.height;
         }
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace IsoHex
             // Iterate through all ground tiles
             foreach(var obj in FilterTerrain(list)){
                 Vector2 tmpVec = CoordUtils.GetWorldPosition(new Vector2(
-                    obj.Value.Position.X, obj.Value.Position.Y
+                    obj.Value.Position.Value.X, obj.Value.Position.Value.Y
                 ));
                 float tmpDist = Vector2.Distance(src, tmpVec);
 
@@ -101,7 +101,9 @@ namespace IsoHex
 			foreach (var obj in FilterTerrain(list))
 			{
                 Vector3 tmpVec = CoordUtils.GetWorldPosition(new Vector3(
-                    obj.Value.Position.X, obj.Value.Position.Y, obj.Value.Position.Z
+                    obj.Value.Position.Value.X, 
+                    obj.Value.Position.Value.Y,
+                    obj.Value.Position.Value.Z
                 ));
 				float tmpDist = Vector3.Distance(src, tmpVec);
 

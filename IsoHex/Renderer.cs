@@ -339,9 +339,9 @@ namespace IsoHex
         public bool SetFocus(Guid ID, Dictionary<Guid, Entity> list){
             if (!list.ContainsKey(ID)) { return false; }
             Entity entity = list[ID];
-            if (!entity.Active.HasFlag(Entity._Components.RENDERABLE)) { return false; }
+            if (!entity.Renderable.HasValue) { return false; }
 
-            cameraLookAt = CoordUtils.GetWorldPosition(entity.Renderable.pos);
+            cameraLookAt = CoordUtils.GetWorldPosition(entity.Renderable.Value.pos);
 			return true;
         }
 
@@ -354,18 +354,20 @@ namespace IsoHex
             
             // Get every renderable thing
             foreach (var obj in list.Where(
-                x => x.Value.Active.HasFlag(Entity._Components.RENDERABLE)
+                x => x.Value.Renderable.HasValue
             )){
                 
                 // Convert coordinates
-                Vector3 pos = CoordUtils.GetWorldPosition(obj.Value.Renderable.pos);
-                Vector3 scale = CoordUtils.GetWorldScale(obj.Value.Renderable.scale);
+                Vector3 pos = 
+                    CoordUtils.GetWorldPosition(obj.Value.Renderable.Value.pos);
+                Vector3 scale = 
+                    CoordUtils.GetWorldScale(obj.Value.Renderable.Value.scale);
 
                 // Render object depending on model ID
                 VertexPositionColor[] Verts;
 				bool isWireframe = false;
 
-                switch(obj.Value.Renderable.modelID){
+                switch(obj.Value.Renderable.Value.modelID){
                     case "ground":
                         Verts = DrawHexagon(
                             pos,
@@ -379,8 +381,8 @@ namespace IsoHex
                         Verts = DrawCursor(
                             pos, 
                             scale, 
-                            obj.Value.Position.dir,
-                            obj.Value.Team.team, 
+                            obj.Value.Position.Value.dir,
+                            obj.Value.Team.Value.team, 
                             gametime.TotalGameTime.TotalSeconds
                         );
                         break;
@@ -403,12 +405,14 @@ namespace IsoHex
                 // Otherwise check for clipping collisions with must-be-drawn objects
                 foreach(var mbd in list.Where(
                     x => x.Key != obj.Key &&
-                    x.Value.Active.HasFlag(Entity._Components.RENDERABLE) &&
-                    x.Value.Renderable.alwaysVisible
+                    x.Value.Renderable.HasValue &&
+                    x.Value.Renderable.Value.alwaysVisible
                 )){
 					// Get center of object and direction from object to camera
-					Vector3 mbdCenter = CoordUtils.GetWorldPosition(mbd.Value.Renderable.pos);
-					Vector3 mbdScale = CoordUtils.GetWorldScale(mbd.Value.Renderable.scale);
+					Vector3 mbdCenter = 
+                        CoordUtils.GetWorldPosition(mbd.Value.Renderable.Value.pos);
+					Vector3 mbdScale = 
+                        CoordUtils.GetWorldScale(mbd.Value.Renderable.Value.scale);
                     mbdCenter.Z += 0.5f * mbdScale.Z;
 
 					Vector3 dir = Vector3.Normalize(cameraPos - mbdCenter);
